@@ -12,7 +12,7 @@
       'TB' => 1099511627776,
       'GB' => 1073741824,
       'MB' => 1048576,
-      'kb' => 1024,
+      'KB' => 1024,
       //0 => 'bytes'
     ); // array
     
@@ -49,14 +49,14 @@
   */
   function format_datetime($value = null, $format = null, $timezone = null) {
     if (is_null($timezone) && function_exists('logged_user') && (logged_user() instanceof User)) {
-      $timezone = logged_user()->getTimezone();
+      $timezone = logged_user()->getContact()->getTimezone();
     } // if
     $datetime = $value instanceof DateTimeValue ? $value : new DateTimeValue($value);
-    return Localization::instance()->formatDateTime($datetime, $timezone);
+    return Localization::instance()->formatDateTime($datetime, $format, $timezone);
   } // format_datetime
   
   /**
-  * Return formated date
+  * Return formatted date
   *
   * @access public
   * @param DateTimeValue $value If value is not instance of DateTime object new DateTime
@@ -67,10 +67,10 @@
   */
   function format_date($value = null, $format = null, $timezone = null) {
     if (is_null($timezone) && function_exists('logged_user') && (logged_user() instanceof User)) {
-      $timezone = logged_user()->getTimezone();
+      $timezone = logged_user()->getContact()->getTimezone();
     } // if
     $datetime = $value instanceof DateTimeValue ? $value : new DateTimeValue($value);
-    return Localization::instance()->formatDate($datetime, $timezone);
+    return Localization::instance()->formatDate($datetime, $timezone, $format);
   } // format_date
   
   /**
@@ -81,12 +81,12 @@
   * @param float $timezone Timezone, if NULL it will be autodetected (by currently logged user if we have it)
   * @return string
   */
-  function format_descriptive_date($value = null, $timezone = null) {
+  function format_descriptive_date($value = null, $timezone = null, $format = null) {
     if (is_null($timezone) && function_exists('logged_user') && (logged_user() instanceof User)) {
-      $timezone = logged_user()->getTimezone();
+      $timezone = logged_user()->getContact()->getTimezone();
     } // if
     $datetime = $value instanceof DateTimeValue ? $value : new DateTimeValue($value);
-    return Localization::instance()->formatDescriptiveDate($datetime, $timezone);
+    return Localization::instance()->formatDescriptiveDate($datetime, $timezone, $format);
   } // format_descriptive_date
   
   /**
@@ -101,10 +101,22 @@
   */
   function format_time($value = null, $format = null, $timezone = null) {
     if (is_null($timezone) && function_exists('logged_user') && (logged_user() instanceof User)) {
-      $timezone = logged_user()->getTimezone();
+      $timezone = logged_user()->getContact()->getTimezone();
     } // if
     $datetime = $value instanceof DateTimeValue ? $value : new DateTimeValue($value);
     return Localization::instance()->formatTime($datetime, $timezone);
   } // format_time
+  
+  /**
+   * Uses the 'day...' instead of 'days...' language token when there's only one day
+   * @access public
+   * @param string language token (e.g. 'days left')
+   * @param int number of days
+   * @return string translated string
+   */
+  function format_days($tok, $days) {
+    if ($days == 1) $tok = str_replace('days', 'day', $tok);
+    return lang($tok, $days);
+  }
 
 ?>

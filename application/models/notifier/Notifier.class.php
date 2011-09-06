@@ -19,7 +19,7 @@
     const SMTP_SECURE_CONNECTION_TLS = 'tls';
     
     /**
-    * Cached value of echange compatible config option
+    * Cached value of exchange compatible config option
     *
     * @var boolean
     */
@@ -38,10 +38,12 @@
       $new_password = $user->resetPassword(true);
       tpl_assign('user', $user);
       tpl_assign('new_password', $new_password);
+
+      $from = $administrator->getDisplayName() . ' ' . config_option('site_name', '');
       
       return self::sendEmail(
         self::prepareEmailAddress($user->getEmail(), $user->getDisplayName()),
-        self::prepareEmailAddress($administrator->getEmail(), $administrator->getDisplayName()),
+        self::prepareEmailAddress($administrator->getEmail(), $from),
         lang('your password'),
         tpl_fetch(get_template_path('forgot_password', 'notifier'))
       ); // send
@@ -59,14 +61,90 @@
     static function newUserAccount(User $user, $raw_password) {
       tpl_assign('new_account', $user);
       tpl_assign('raw_password', $raw_password);
+
+      $from = $user->getCreatedByDisplayName() . ' ' . config_option('site_name', '');
       
       return self::sendEmail(
         self::prepareEmailAddress($user->getEmail(), $user->getDisplayName()),
-        self::prepareEmailAddress($user->getCreatedBy()->getEmail(), $user->getCreatedByDisplayName()),
+        self::prepareEmailAddress($user->getCreatedBy()->getEmail(), $from),
         lang('your account created'),
         tpl_fetch(get_template_path('new_account', 'notifier'))
       ); // send
     } // newUserAccount
+
+    /**
+    * Send account update notification email to the user whose account has been updated
+    *
+    * @param User $user
+    * @param string $raw_password
+    * @return boolean
+    * @throws NotifierConnectionError
+    */
+    static function updatedUserAccount(User $user, $raw_password) {
+      tpl_assign('updated_account', $user);
+      tpl_assign('raw_password', $raw_password);
+      
+      return self::sendEmail(
+        self::prepareEmailAddress($user->getEmail(), $user->getDisplayName()),
+        self::prepareEmailAddress($user->getUpdatedBy()->getEmail(), $user->getUpdatedByDisplayName()),
+        lang('your account updated'),
+        tpl_fetch(get_template_path('updated_account', 'notifier'))
+      ); // send
+    } // updatedUserAccount
+  
+    /**
+    * Send new task notification to the list of users ($people)
+    *
+    * @param ProjectMessage $message New message
+    * @param array $people
+    * @return boolean
+    * @throws NotifierConnectionError
+    */
+    static function newTask(ProjectTask $task, $people) {
+      if(!is_array($people) || !count($people)) {
+        return; // nothing here...
+      } // if
+      
+      tpl_assign('new_task', $task);
+
+      $recipients = array();
+      foreach($people as $user) {
+        $recipients[] = self::prepareEmailAddress($user->getEmail(), $user->getDisplayName());
+      } // foreach
+      return self::sendEmail(
+        $recipients,
+        self::prepareEmailAddress($task->getCreatedBy()->getEmail(), $task->getCreatedByDisplayName()),
+        $task->getProject()->getName() . ' - ' . lang('new task') . ' - ' . $task->getObjectName(),
+        tpl_fetch(get_template_path('new_task', 'notifier'))
+      ); // send
+    } // newTask
+     
+    /**
+    * Send closed task notification to the list of users ($people)
+    *
+    * @param ProjectTask $task closed task
+    * @param array $people
+    * @return boolean
+    * @throws NotifierConnectionError
+    */
+    static function completeTask(ProjectTask $task, $people) {
+      if(!is_array($people) || !count($people)) {
+        return; // nothing here...
+      } // if
+      
+      tpl_assign('task', $task);
+
+      $recipients = array();
+      foreach($people as $user) {
+        $recipients[] = self::prepareEmailAddress($user->getEmail(), $user->getDisplayName());
+      } // foreach
+      return self::sendEmail(
+        $recipients,
+        self::prepareEmailAddress($task->getCreatedBy()->getEmail(), $task->getCreatedByDisplayName()),
+        $task->getProject()->getName() . ' - ' . lang('complete task') . ' - ' . $task->getObjectName(),
+        tpl_fetch(get_template_path('complete_task', 'notifier'))
+      ); // send
+    } // newTask
   
     /**
     * Send new message notification to the list of users ($people)
@@ -95,6 +173,164 @@
         tpl_fetch(get_template_path('new_message', 'notifier'))
       ); // send
     } // newMessage
+
+    /**
+    * Send new message notification to the list of users ($people)
+    *
+    * @param ProjectFile $file New file
+    * @param array $people
+    * @return boolean
+    * @throws NotifierConnectionError
+    */
+    static function newFile(ProjectFile $file, $people) {
+      if (!is_array($people) || !count($people)) {
+        return; // nothing here...
+      } // if
+      
+      tpl_assign('new_file', $file);
+      
+      $recipients = array();
+      foreach ($people as $user) {
+        $recipients[] = self::prepareEmailAddress($user->getEmail(), $user->getDisplayName());
+      } // foreach
+      
+      return self::sendEmail(
+        $recipients,
+        self::prepareEmailAddress($file->getCreatedBy()->getEmail(), $file->getCreatedByDisplayName()),
+        $file->getProject()->getName() . ' - ' . $file->getFilename(),
+        tpl_fetch(get_template_path('new_file', 'notifier'))
+      ); // send
+    } // newFile
+
+    /**
+    * Send ticket notification to the list of users ($people)
+    *
+    * @param ProjectTicket $ticket New ticket
+    * @param array $people
+    * @param string $template template to send notification
+    * @param User $user user who send the notification
+    * @return boolean
+    * @throws NotifierConnectionError
+    */
+    static function ticket(ProjectTicket $ticket, $people, $template, $user) {
+      if(!is_array($people) || !count($people)) {
+        return; // nothing here...
+      } // if
+
+      $recipients = array();
+      foreach($people as $subscriber) {
+        if($subscriber->getId() == $user->getId()) {
+          continue; // skip comment author
+        } // if
+
+        $recipients[] = self::prepareEmailAddress($subscriber->getEmail(), $subscriber->getDisplayName());
+      } // foreach
+
+      if(!count($recipients)) {
+        return true; // no recipients
+      } // if
+
+      tpl_assign('ticket', $ticket);
+
+      return self::sendEmail(
+        $recipients,
+        self::prepareEmailAddress($user->getEmail(), $user->getDisplayName()),
+        $ticket->getProject()->getName() . ' - ' . $ticket->getSummary(),
+        tpl_fetch(get_template_path($template, 'notifier'))
+      ); // send
+    } // ticket
+
+    /**
+    * Send some files attached to ticket notification to ticket subscribers
+    *
+    * @param ProjectTicket $ticket
+    * @param array $attached_files Files attached to ticket
+    * @return boolean
+    * @throws NotifierConnectionError
+    */
+    static function attachFilesToTicket(ProjectTicket $ticket, $attached_files) {
+      $all_subscribers = $ticket->getSubscribers();
+      if(!is_array($all_subscribers)) {
+        return true; // no subscribers
+      } // if
+      
+      $recipients = array();
+      foreach($all_subscribers as $subscriber) {
+        if($subscriber->getId() == $ticket->getUpdatedById()) {
+          continue; // skip comment author
+        } // if
+        
+        $recipients[] = self::prepareEmailAddress($subscriber->getEmail(), $subscriber->getDisplayName());
+      } // foreach
+      
+      if(!count($recipients)) {
+        return true; // no recipients
+      } // if
+      
+      tpl_assign('ticket', $ticket);
+      tpl_assign('attached_files', $attached_files);
+      
+      return self::sendEmail(
+        $recipients,
+        self::prepareEmailAddress($ticket->getUpdatedBy()->getEmail(), $ticket->getUpdatedBy()->getDisplayName()),
+        $ticket->getProject()->getName() . ' - ' . $ticket->getSummary(),
+        tpl_fetch(get_template_path('attach_files_ticket', 'notifier'))
+      ); // send
+    } // attachFilesToTicket
+
+    /**
+    * Send some files detached from ticket notification to ticket subscribers
+    *
+    * @param ProjectTicket $ticket
+    * @param array $detached_files Files detached from ticket
+    * @return boolean
+    * @throws NotifierConnectionError
+    */
+    static function detachFilesFromTicket(ProjectTicket $ticket, $detached_files) {
+      $all_subscribers = $ticket->getSubscribers();
+      if (!is_array($all_subscribers)) {
+        return true; // no subscribers
+      } // if
+      
+      $recipients = array();
+      foreach ($all_subscribers as $subscriber) {
+        if ($subscriber->getId() == $ticket->getUpdatedById()) {
+          continue; // skip comment author
+        } // if
+        
+        $recipients[] = self::prepareEmailAddress($subscriber->getEmail(), $subscriber->getDisplayName());
+      } // foreach
+      
+      if (!count($recipients)) {
+        return true; // no recipients
+      } // if
+      
+      tpl_assign('ticket', $ticket);
+      tpl_assign('detached_files', $detached_files);
+      
+      return self::sendEmail(
+        $recipients,
+        self::prepareEmailAddress($ticket->getUpdatedBy()->getEmail(), $ticket->getUpdatedBy()->getDisplayName()),
+        $ticket->getProject()->getName() . ' - ' . $ticket->getSummary(),
+        tpl_fetch(get_template_path('detach_files_ticket', 'notifier'))
+      ); // send
+    } // detachFilesFromTicket
+
+    /**
+    * Send new comment notification to ticket subscriber
+    *
+    * @param TicketComment $comment
+    * @return boolean
+    * @throws NotifierConnectionError
+    */
+    static function newTicketComment(Comment $comment) {
+      $ticket = $comment->getObject();
+      if(!($ticket instanceof ProjectTicket)) {
+        throw new Error('Invalid comment object');
+      } // if
+
+      return self::newComment($comment, $ticket->getSubscribers());
+    } // newTicketComment
     
     /**
     * Send new comment notification to message subscriber
@@ -110,17 +346,32 @@
       } // if
       
       $all_subscribers = $message->getSubscribers();
+      return self::newComment($comment, $message->getSubscribers());
+    } // newMessageComment
+
+
+    /**
+    * Send new comment notification to subscribers
+    *
+    * @access private
+    * @param Comment $comment
+    * @param string $title title of object for subject
+    * @param array $all_subscribers subscribers
+    * @return boolean
+    * @throws NotifierConnectionError
+    */
+    static function newComment(Comment $comment, $all_subscribers) {
       if (!is_array($all_subscribers)) {
         return true; // no subscribers
       } // if
       
       $recipients = array();
       foreach ($all_subscribers as $subscriber) {
-        if ($subscriber->getId() == $comment->getCreatedById()) {
-          continue; // skip comment author
-        } // if
+        //if ($subscriber->getId() == $comment->getCreatedById()) {
+        //  continue; // skip comment author
+        //} // if
         
-        if ($comment->isPrivate()) {
+        if ($comment->isPrivate() || $comment->getObject()->isPrivate()) {
           if ($subscriber->isMemberOfOwnerCompany()) {
             $recipients[] = self::prepareEmailAddress($subscriber->getEmail(), $subscriber->getDisplayName());
           } // if
@@ -138,10 +389,36 @@
       return self::sendEmail(
         $recipients,
         self::prepareEmailAddress($comment->getCreatedBy()->getEmail(), $comment->getCreatedByDisplayName()),
-        $comment->getProject()->getName() . ' - ' . $message->getTitle(),
+        $comment->getProject()->getName() . ' - ' . $comment->getObject()->getTitle(),
         tpl_fetch(get_template_path('new_comment', 'notifier'))
       ); // send
-    } // newMessageComment
+    } // newComment
+
+
+
+    /**
+    * Tests to see if $new_user is not the same as $old_user
+    * if users are different return true so a notification can be sent
+    * otherwise return false so the notification can be avoided 
+    *
+    * @param $new_user (optional) Newly assigned user (if applicable)
+    * @param $old_user (optional) Previously assigned user (if applicable)
+    * @return boolean
+    */
+    static function notifyNeeded($new_user, $old_user) {
+      if ($old_user instanceof User) {
+        // We have a new owner and it is different than old owner
+        if ($new_user instanceof User && $new_user->getId() <> $old_user->getId()) {
+          return true;
+        }
+      } else {
+          // We have new owner
+          if ($new_user instanceof User) {
+            return true;
+          }
+      } // if
+      return false;
+    }
     
     // ---------------------------------------------------
     //  Milestone
@@ -167,11 +444,91 @@
       return self::sendEmail(
         self::prepareEmailAddress($milestone->getAssignedTo()->getEmail(), $milestone->getAssignedTo()->getDisplayName()),
         self::prepareEmailAddress($milestone->getCreatedBy()->getEmail(), $milestone->getCreatedByDisplayName()),
-        $milestone->getProject()->getName() . ' - ' . lang('milestone assigned to you') . " - " . $milestone->getName(),
+        $milestone->getProject()->getName() . ' - ' . lang('milestone assigned to you') . ' - ' . $milestone->getName(),
         tpl_fetch(get_template_path('milestone_assigned', 'notifier'))
       ); // send
     } // milestoneAssigned
+
+    /**
+    * Task has been assigned to the user
+    *
+    * @param ProjectTask $task
+    * @return boolean
+    * @throws NotifierConnectionError
+    */
+    function taskAssigned(ProjectTask $task) {
+      if ($task->isCompleted()) {
+        return true; // task has been already completed...
+      } // if
+      if (!($task->getAssignedTo() instanceof User)) {
+        return true; // not assigned to user
+      } // if
+      if ($task->getCreatedBy() instanceof User) {
+        $from = self::prepareEmailAddress($task->getCreatedBy()->getEmail(), $task->getCreatedByDisplayName()); 
+      } else {
+        $from = self::prepareEmailAddress(logged_user()->getEmail(), logged_user()->getDisplayName()); 
+      } // if
+
+      tpl_assign('task_assigned', $task);
+      
+      return self::sendEmail(
+        self::prepareEmailAddress($task->getAssignedTo()->getEmail(), $task->getAssignedTo()->getDisplayName()),
+        $from,
+        $task->getProject()->getName() . ' - ' . lang('task assigned to you') . ' - ' . $task->getObjectName(),
+        tpl_fetch(get_template_path('task_assigned', 'notifier'), 'html', '')
+      ); // send
+    }
+
+    /**
+    * Send new comment notification to selected users, if not message (because message is already treated and can subscribre/unsubscribe)
+    *
+    * @param comment $comment
+    * @return boolean
+    * @throws NotifierConnectionError
+    */
+    static function newOtherComment(Comment $comment, $people) {
+      if (!is_array($people) || !count($people)) {
+        return; // nothing here...
+      } // if
     
+      // normally, if comment on message, shouldn't be using this function by the normal subscription
+      if (($comment->getObject() instanceof ProjectMessage)) {
+        throw new Error('Invalid comment object');
+      } // if
+              
+      if (!is_array($people)) {
+        return true; // no subscribers
+      } // if
+      
+      $recipients = array();
+      foreach ($people as $subscriber) {
+        //if ($subscriber->getId() == $comment->getCreatedById()) {
+        //  continue; // skip comment author
+        //} // if
+        
+        if ($comment->isPrivate() || $comment->getObject()->isPrivate()) {
+          if ($subscriber->isMemberOfOwnerCompany()) {
+            $recipients[] = self::prepareEmailAddress($subscriber->getEmail(), $subscriber->getDisplayName());
+          } // if
+        } else {
+          $recipients[] = self::prepareEmailAddress($subscriber->getEmail(), $subscriber->getDisplayName());
+        } // of
+      } // foreach
+      
+      if (!count($recipients)) {
+        return true; // no recipients
+      } // if
+      
+      tpl_assign('new_comment', $comment);
+      
+      return self::sendEmail(
+        $recipients,
+        self::prepareEmailAddress($comment->getCreatedBy()->getEmail(), $comment->getCreatedByDisplayName()),
+        $comment->getProject()->getName(),
+        tpl_fetch(get_template_path('new_comment', 'notifier'))
+      ); // send
+    } // newOtherComment
+
     // ---------------------------------------------------
     //  Util functions
     // ---------------------------------------------------
@@ -218,19 +575,85 @@
     * @return bool successful
     */
     static function sendEmail($to, $from, $subject, $body = false, $type = 'text/plain', $encoding = '8bit') {
+    //static function sendEmail($to, $from, $subject, $body = false, $type = 'text/html', $encoding = '') {
+   
       Env::useLibrary('swift');
       
       $mailer = self::getMailer();
       if (!($mailer instanceof Swift)) {
         throw new NotifierConnectionError();
       } // if
-      
+
+      /** 
+      * If the 'expose user e-mail' flag is cleared, then replace the user's
+      * email with the site e-mail.
+      */
+      if (config_option('mail_expose_user_emails', 0)==0) {
+        $from = self::getSiteEmailAddress();
+      }
+     
+      /** 
+      * Set name address in ReplyTo, some MTA think we're usurpators
+      * (which is quite true actually...)
+      * We only do this if we aren't already set to use the site e-mail for
+      * all communications.
+      */
+      elseif (config_option('mail_use_reply_to', 0)==1) {
+        $i = strpos($from, ' <');
+        $name = '';
+        if ($i!==false) {
+          $name = substr($from, 0, $i);
+        }
+        $mailer->setReplyTo($from);
+        $from = self::getSiteEmailAddress($name);
+      }
+
+      // from must be address known on server when authentication is selected
+      $smtp_authenticate = config_option('smtp_authenticate', false);
+      if ($smtp_authenticate) $from = config_option('smtp_username');
+
+      trace("mailer->send($to, $from, $subject, $body, $type, $encoding)");
+
       $result = $mailer->send($to, $from, $subject, $body, $type, $encoding);
       $mailer->close();
       
       return $result;
     } // sendEmail
     
+    /**
+    * This function will return the e-mail address that should be used as the 'from'
+    * address, if we are using the site address, rather than a user's own address.
+    * $display_name is the name that will be displayed.  If blank or omitted then
+    * the project name will be used.
+    *
+    * @param void
+    * @return string
+    */
+    static function getSiteEmailAddress($display_name = '') {
+        static $site_email;
+        static $default_name;
+
+        if (!isset($site_email)) {
+            $site_email = trim(config_option('mail_from'));
+            if ($site_email=='') {
+              $site_email = 'projectpier@'.$_SERVER['SERVER_NAME'];
+            }
+        }
+
+        $display_name = trim($display_name);
+        if ($display_name == '') {
+            if (!isset($default_name)) {
+                $default_name = config_option('site_name', '');
+                if ($default_name == '') {
+                    $default_name = "ProjectPier";
+                }
+            }
+            $display_name = $default_name;
+        }
+        
+        return self::prepareEmailAddress($site_email, $display_name);
+    }
+
     /**
     * This function will return SMTP connection. It will try to load options from 
     * config and if it fails it will use settings from php.ini

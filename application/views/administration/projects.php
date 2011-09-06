@@ -7,13 +7,14 @@
   
   if (Project::canAdd(logged_user())) {
     add_page_action(lang('add project'), get_url('project', 'add'));
+    add_page_action(lang('copy project'), get_url('project', 'copy'));
   } // if
 
 ?>
 <?php if (isset($projects) && is_array($projects) && count($projects)) { ?>
 <table id="projects">
   <tr>
-    <th></th>
+    <th class="short"></th>
     <th><?php echo lang('name') ?></th>
     <th><?php echo lang('options') ?></th>
   </tr>

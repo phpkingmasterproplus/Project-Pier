@@ -1,14 +1,14 @@
 <?php
 
   set_page_title(lang('delete message'));
-  project_tabbed_navigation(PROJECT_TAB_MESSAGES);
+  project_tabbed_navigation('messages');
   project_crumbs(lang('delete message'));
 
 ?>
 <form action="<?php echo $message->getDeleteUrl() ?>" method="post">
   <?php tpl_display(get_template_path('form_errors')) ?>
 
-  <div><?php echo lang('about to delete') ?> <?php echo strtolower(lang('message')) ?> <b><?php echo clean($message->getTitle()) ?></b></div>
+  <div><?php echo lang('about to delete') ?> <?php echo lc(lang('message')) ?> <b><?php echo clean($message->getTitle()) ?></b></div>
 
   <div>
     <label><?php echo lang('confirm delete message') ?></label>

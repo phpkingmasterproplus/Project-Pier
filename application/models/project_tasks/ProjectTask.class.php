@@ -9,11 +9,18 @@
   class ProjectTask extends BaseProjectTask {
     
     /**
-    * Message comments are searchable
+    * Task comments are searchable
     *
     * @var boolean
     */
     protected $is_searchable = true;
+    
+    /**
+    * Project Tasks are commentable
+    *
+    * @var boolean
+    */
+    protected $is_commentable = true;
     
     /**
     * Array of searchable columns
@@ -84,7 +91,7 @@
     } // getAssignedTo
     
     /**
-    * Return owner comapny
+    * Return owner company
     *
     * @access public
     * @param void
@@ -128,7 +135,7 @@
     } // isCompleted
     
     /**
-    * Returns value of is private flag inehrited from parent task list
+    * Returns value of is private flag inherited from parent task list
     *
     * @param void
     * @return boolean
@@ -137,6 +144,16 @@
       $parent_list = $this->getTaskList();
       return $parent_list instanceof ProjectTaskList ? $parent_list->isPrivate() : true;
     } // isPrivate
+
+    /**
+    * Returns value of is private flag 
+    *
+    * @param void
+    * @return boolean
+    */
+    function getIsPrivate() {
+      return $this->isPrivate();
+    } // getIsPrivate
     
     // ---------------------------------------------------
     //  Permissions
@@ -149,7 +166,13 @@
     * @return boolean
     */
     function canView(User $user) {
-      return false;
+      if (!$user->isProjectUser($this->getProject())) {
+        return false; // user does not have access to project
+      } // if
+      if ($this->isPrivate() && !$user->isMemberOfOwnerCompany()) {
+        return false; // user not member of owner company can't access private objects
+      } // if
+      return true;
     } // canView
     
     /**
@@ -264,6 +287,25 @@
       $this->setCompletedById(logged_user()->getId());
       $this->save();
       
+      $notify_people = array();
+      $project_companies = array();
+            
+      if($this->getAssignedTo() == null)
+        $project_companies = active_project()->getCompanies();
+      if($this->getAssignedTo() instanceof Company)
+        $project_companies = array($this->getAssignedTo());
+      if($this->getAssignedTo() instanceof User)
+        $notify_people = array($this->getAssignedTo());
+            
+      foreach($project_companies as $project_company) {
+        $company_users = $project_company->getUsersOnProject(active_project());
+          if(is_array($company_users))
+            foreach($company_users as $company_user)
+              $notify_people[] = $company_user;
+      } // foreach
+            
+      Notifier::completeTask($this, $notify_people);
+      
       $task_list = $this->getTaskList();
       if (($task_list instanceof ProjectTaskList) && $task_list->isOpen()) {
         $open_tasks = $task_list->getOpenTasks();
@@ -308,7 +350,30 @@
     function getEditUrl() {
       return get_url('task', 'edit_task', array('id' => $this->getId(), 'active_project' => $this->getProjectId()));
     } // getEditUrl
-    
+
+    /**
+    * Return details task URL
+    * http://haris.tv htv edit
+    * 
+    * @access public
+    * @param void
+    * @return string
+    */
+    function getDetailsUrl() {
+      return get_url('task', 'task_details', array('id' => $this->getId(), 'active_project' => $this->getProjectId()));
+    } // getDetailsUrl
+
+    /**
+    * Return view task URL
+    *
+    * @access public
+    * @param void
+    * @return string
+    */
+    function getViewUrl() {
+      return get_url('task', 'view_task', array('id' => $this->getId(), 'active_project' => $this->getProjectId()));
+    } // getViewUrl
+
     /**
     * Return delete task URL
     *
@@ -404,8 +469,14 @@
     * @return string
     */
     function getObjectName() {
-      $return = substr_utf($this->getText(), 0, 50);
-      return strlen_utf($this->getText()) > 50 ? $return . '...' : $return;
+      $name = $this->getText();
+      $len = strlen_utf($name);
+      $i = strpos($name, "\n");
+      if ($i !== false ) {
+        $name = substr_utf($name, 0, $i-1);
+      }
+      $return = substr_utf($name, 0, 50);
+      return $len > 50 ? $return . '...' : $return;
     } // getObjectName
     
     /**
@@ -426,6 +497,8 @@
     * @return string
     */
     function getObjectUrl() {
+      return $this->getViewUrl();
+
       $list = $this->getTaskList();
       return $list instanceof ProjectTaskList ? $list->getViewUrl() : null;
     } // getObjectUrl

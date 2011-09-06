@@ -1,14 +1,14 @@
 <?php
 
   set_page_title(lang('delete task'));
-  project_tabbed_navigation(PROJECT_TAB_TASKS);
+  project_tabbed_navigation('tasks');
   project_crumbs(lang('delete task'));
 
 ?>
 <form action="<?php echo $task->getDeleteUrl() ?>" method="post">
   <?php tpl_display(get_template_path('form_errors')) ?>
 
-  <div><?php echo lang('about to delete') ?> <?php echo strtolower(lang('task')) ?> <b><?php echo clean($task->getText()) ?></b> from <?php echo strtolower(lang('task list')) ?> <b><?php echo clean($task_list->getName()) ?></div>
+  <div><?php echo lang('about to delete') ?> <?php echo lc(lang('task')) ?> <b><?php echo clean($task->getText()) ?></b> from <?php echo strtolower(lang('task list')) ?> <b><?php echo clean($task_list->getName()) ?></div>
 
   <div>
     <label><?php echo lang('confirm delete task') ?></label>

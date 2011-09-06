@@ -13,20 +13,18 @@
 <?php $counter = 0; ?>
 <?php foreach ($options as $option) { ?>
 <?php $counter++; ?>
-    <div class="configCategoryOtpion <?php echo $counter % 2 ? 'odd' : 'even' ?>" id="configCategoryOption_<?php echo $option->getName() ?>">
-      <div class="configOptionInfo">
-        <div class="configOptionLabel"><label><?php echo clean($option->getDisplayName()) ?>:</label></div>
-<?php if (trim($option_description = $option->getDisplayDescription())) { ?>
-        <div class="configOptionDescription desc"><?php echo $option_description ?></div>
-<?php } // if ?>
-      </div>
+    <div class="configCategoryOption <?php echo $counter % 2 ? 'odd' : 'even' ?>" id="configCategoryOption_<?php echo $option->getName() ?>">
+      <div class="configOptionLabel"><label><?php echo clean($option->getDisplayName()) ?>:</label></div>
       <div class="configOptionControl"><?php echo $option->render('options[' . $option->getName() . ']') ?></div>
+<?php if (trim($option_description = $option->getDisplayDescription())) { ?>
+      <div class="configOptionDescription desc"><?php echo do_textile($option_description) ?></div>
+<?php } // if ?>
       <div class="clear"></div>
     </div>
 <?php } // foreach ?>
   </div>
 
-  <?php echo submit_button(lang('save')) ?>&nbsp;<button type="reset"><?php echo lang('reset') ?></button>
+  <div style="float:right"><button style="margin-top: 10px;" type="reset"><?php echo lang('reset') ?></button>&nbsp;<?php echo submit_button(lang('save')) ?></div>
 </form>
 <?php } else { ?>
 <p><?php echo lang('config category is empty') ?></p>

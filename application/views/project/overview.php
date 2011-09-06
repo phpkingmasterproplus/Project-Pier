@@ -1,28 +1,62 @@
 <?php
-
+  trace(__FILE__,"set_page_title(lang('overview')");
   set_page_title(lang('overview'));
-  project_tabbed_navigation();
+  trace(__FILE__,"project_crumbs(lang('overview'))");
   project_crumbs(lang('overview'));
-  if (ProjectMessage::canAdd(logged_user(), active_project())) {
-    add_page_action(lang('add message'), get_url('message', 'add'));
-  } // if
-  if (ProjectTaskList::canAdd(logged_user(), active_project())) {
-    add_page_action(lang('add task list'), get_url('task', 'add_list'));
-  } // if
-  if (ProjectMilestone::canAdd(logged_user(), active_project())) {
-    add_page_action(lang('add milestone'), get_url('milestone', 'add'));
-  } // if
-  if (ProjectFile::canAdd(logged_user(), active_project())) {
-    add_page_action(lang('add file'), get_url('files', 'add_file'));
-  } // if
-  
   add_stylesheet_to_page('project/project_log.css');
-
+  trace(__FILE__,'stylesheet added');
 ?>
+<?php $this->includeTemplate(get_template_path('project/pageactions')); ?>
+<?php if (active_project()->getParent()) { ?>
+  <div class="block">
+  <div class="header parent">
+    <?php echo lang('parent project') ?>: <a href="<?php echo active_project()->getParent()->getOverviewUrl() ?>"><?php echo clean(active_project()->getParent()->getName()) ?></a>
+ </div>
+ </div>
+<?php } // if ?>
 <?php if (trim(active_project()->getDescription()) && active_project()->getShowDescriptionInOverview()) { ?>
-<div class="hint">
-  <div class="header"><?php echo clean(active_project()->getName()) ?></div>
-  <div class="content"><?php echo do_textile(active_project()->getDescription()) ?></div>
+<div id="project" class="row">
+<?php $show_icon = (config_option('files_show_icons', '1') == '1'); ?>
+ <div class="block hint">
+<?php $this->includeTemplate(get_template_path('view_progressbar', 'project')); ?>
+  <div class="header"><?php if ($show_icon) { ?>
+ <div class="icon"><img src="<?php echo active_project()->getLogoUrl() ?>" alt="<?php echo active_project()->getName() ?>" /></div>
+<?php } // if ?>
+<?php echo clean(active_project()->getName()) ?></div>
+  <div class="content"><?php echo plugin_manager()->apply_filters('project_description', do_textile(active_project()->getDescription())) ?>
+  <div class="clear"></div>
+  <div id="pageAttachments">
+  <?php
+  if (is_array($page_attachments) && count($page_attachments)) {
+    foreach ($page_attachments as $page_attachment) {
+      tpl_assign('attachment', $page_attachment);
+      if ($page_attachment->getRelObjectManager() != '') {
+        if (file_exists(get_template_path('view_'.$page_attachment->getRelObjectManager(), 'page_attachment'))) {
+          $this->includeTemplate(get_template_path('view_'.$page_attachment->getRelObjectManager(), 'page_attachment'));
+        } else {
+          $this->includeTemplate(get_template_path('view_DefaultObject', 'page_attachment'));
+        }
+      } else {
+        $this->includeTemplate(get_template_path('view_EmptyAttachment', 'page_attachment'));
+      }
+    } // foreach
+  } // if ?>
+  </div></div>
+ </div>
+</div>
+<?php } // if ?>
+<div class="clear"></div>
+<?php if (isset($subprojects) && is_array($subprojects) && count($subprojects)) { ?>
+<div class="block">
+  <div class="header"><?php echo lang('subprojects') ?></div>
+  <div class="content">
+    <ul>
+<?php foreach ($subprojects as $subproject) { ?>
+<?php tpl_assign('project', $subproject); ?>
+    <li><a href="<?php echo $subproject->getOverviewUrl() ?>"><?php echo clean($subproject->getName()) ?></a> <?php $this->includeTemplate(get_template_path('view_progressbar', 'project')); ?></li>
+<?php } // foreach ?>
+    </ul>
+  </div>
 </div>
 <?php } // if ?>
 
@@ -31,16 +65,16 @@
 <?php } // if ?>
 
 <?php if ((is_array($late_milestones) && count($late_milestones)) || (is_array($today_milestones) && count($today_milestones))) { ?>
-<div id="lateMilestones" class="important">
+<div id="lateMilestones" class="important block">
   <div class="header"><?php echo lang('late milestones') ?> / <?php echo lang('today milestones') ?></div>
   <div class="content">
     <ul>
 <?php if (is_array($late_milestones) && count($late_milestones)) { ?>
 <?php foreach ($late_milestones as $late_milestone) { ?>
 <?php if ($late_milestone->getAssignedTo() instanceof ApplicationDataObject) { ?>
-    <li><?php echo clean($late_milestone->getAssignedTo()->getObjectName()) ?>: <a href="<?php echo $late_milestone->getViewUrl() ?>"><?php echo clean($late_milestone->getName()) ?></a> (<?php echo format_descriptive_date($late_milestone->getDueDate()) ?> - <?php echo lang('days late', $late_milestone->getLateInDays()) ?>)</li>
+    <li><?php echo clean($late_milestone->getAssignedTo()->getObjectName()) ?>: <a href="<?php echo $late_milestone->getViewUrl() ?>"><?php echo clean($late_milestone->getName()) ?></a> (<?php echo format_descriptive_date($late_milestone->getDueDate()) ?> - <?php echo format_days('days late', $late_milestone->getLateInDays()) ?>)</li>
 <?php } else { ?>
-    <li><a href="<?php echo $late_milestone->getViewUrl() ?>"><?php echo clean($late_milestone->getName()) ?></a> (<?php echo format_descriptive_date($late_milestone->getDueDate()) ?> - <?php echo lang('days late', $late_milestone->getLateInDays()) ?>)</li>
+    <li><a href="<?php echo $late_milestone->getViewUrl() ?>"><?php echo clean($late_milestone->getName()) ?></a> (<?php echo format_descriptive_date($late_milestone->getDueDate()) ?> - <?php echo format_days('days late', $late_milestone->getLateInDays()) ?>)</li>
 <?php } // if ?>
 <?php } // foreach ?>
 <?php } // if ?>
@@ -70,14 +104,14 @@
 <?php if ($upcoming_milestone->getLeftInDays() <= 30) { ?>
 
 <?php if ($upcoming_milestone->getAssignedTo() instanceof ApplicationDataObject) { ?>
-    <li><?php echo clean($upcoming_milestone->getAssignedTo()->getObjectName()) ?>: <a href="<?php echo $upcoming_milestone->getViewUrl() ?>"><?php echo clean($upcoming_milestone->getName()) ?></a> (<?php echo format_descriptive_date($upcoming_milestone->getDueDate()) ?> - <?php echo lang('days left', $upcoming_milestone->getLeftInDays()) ?>)</li>
+    <li><?php echo clean($upcoming_milestone->getAssignedTo()->getObjectName()) ?>: <a href="<?php echo $upcoming_milestone->getViewUrl() ?>"><?php echo clean($upcoming_milestone->getName()) ?></a> (<?php echo format_descriptive_date($upcoming_milestone->getDueDate()) ?> - <?php echo format_days('days left', $upcoming_milestone->getLeftInDays()) ?>)</li>
 <?php } else { ?>
-    <li><a href="<?php echo $upcoming_milestone->getViewUrl() ?>"><?php echo clean($upcoming_milestone->getName()) ?></a> (<?php echo format_descriptive_date($upcoming_milestone->getDueDate()) ?> - <?php echo lang('days left', $upcoming_milestone->getLeftInDays()) ?>)</li>
+    <li><a href="<?php echo $upcoming_milestone->getViewUrl() ?>"><?php echo clean($upcoming_milestone->getName()) ?></a> (<?php echo format_descriptive_date($upcoming_milestone->getDueDate()) ?> - <?php echo format_days('days left', $upcoming_milestone->getLeftInDays()) ?>)</li>
 <?php } // if ?>
 
 <?php } else { ?>
     </ul>
-    <p><a href="<?php echo active_project()->getMilestonesUrl() ?>#upcomingMilestones">&raquo; <?php echo lang('show all upcoming milestones', count($upcoming_milestones)) ?></a></p>
+    <p><a href="<?php echo active_project()->getMilestonesUrl() ?>#upcomingMilestones"> <?php echo lang('show all upcoming milestones', count($upcoming_milestones)) ?></a></p>
 <?php break; ?>
 <?php } // foreach ?>
 
@@ -93,3 +127,4 @@
 <?php } else { ?>
 <?php echo lang('no activities in project') ?>
 <?php } // if ?>
+<?php trace(__FILE__,'end'); ?>

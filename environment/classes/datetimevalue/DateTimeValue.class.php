@@ -10,6 +10,12 @@
   class DateTimeValue {
     
     /**
+    * Weekend days
+    *
+    * @var array
+    */
+    private $weekendDays = array(0,6);
+    /**
     * Internal timestamp value
     *
     * @var integer
@@ -86,6 +92,17 @@
         } // if
       } // if
     } // advance
+
+    /**
+    * Difference to another DateTime
+    *
+    * @param void
+    * @param integer $input 
+    * @return integer $seconds
+    */
+    function difference(DateTimeValue $input) {  
+      return $this->getTimestamp() - $input->getTimestamp();
+    } // difference
     
     /**
     * This function will return true if this day is today
@@ -112,6 +129,26 @@
              $this->getMonth() == $yesterday->getMonth() &&
              $this->getYear() == $yesterday->getYear();
     } // isYesterday
+
+    /**
+    * This function will return true if this datetime is a week-end day
+    *
+    * @param void
+    * @return boolean
+    */
+    function isWeekend() {
+      return in_array($this->format('w'), $this->weekendDays);
+    } // isWeekend
+    
+    /**
+    * This function will return true if this datetime is a weekday
+    *
+    * @param void
+    * @return boolean
+    */
+    function isWeekday() {
+      return !$this->isWeekend();
+    } // isWeekday
     
     /**
     * This function will move interlan data to the beginning of day and return modified object. 

@@ -18,8 +18,32 @@
       parent::__construct();
       
       $this->setLayout('dialog');
-      $this->addHelper('form', 'breadcrumbs', 'pageactions', 'tabbednavigation', 'company_website', 'project_website');
+      $this->addHelper('form');
+      $this->addHelper('breadcrumbs');
+      $this->addHelper('pageactions');
+      $this->addHelper('tabbednavigation');
+      $this->addHelper('company_website');
+      $this->addHelper('project_website');
     } // __construct
+
+
+
+    /**
+    * Support login with url parameters (single sign on)
+    *
+    * @param void
+    * @return null
+    */
+    function sso() {
+      trace(__FILE__,'sso() - begin');
+      $this->setTemplate('login', 'access');
+      //$GLOBALS['$_POST']=array();
+      $_POST['login']['username']=@$_GET['username'];
+      $_POST['login']['password']=@$_GET['password'];
+      $_POST['login']['remember']=@$_GET['remember'];
+      $this->login();
+      trace(__FILE__,'sso() - end');
+    }
     
     /**
     * Show and process login form
@@ -28,9 +52,10 @@
     * @return null
     */
     function login() {
-      $this->addHelper('form');
-      
+      trace(__FILE__,'login()');
+
       if (function_exists('logged_user') && (logged_user() instanceof User)) {
+        trace(__FILE__, 'login() - redirectTo(dashboard) because already logged in' );
         $this->redirectTo('dashboard');
       } // if
       
@@ -39,7 +64,7 @@
         $login_data = array();
         foreach ($_GET as $k => $v) {
           if (str_starts_with($k, 'ref_')) {
-            $login_data[$k] = $v;
+            $login_data[htmlentities($k)] = $v;
           }
         } // foreach
       } // if
@@ -47,38 +72,28 @@
       tpl_assign('login_data', $login_data);
       
       if (is_array(array_var($_POST, 'login'))) {
-        $username = array_var($login_data, 'username');
-        $password = array_var($login_data, 'password');
-        $remember = array_var($login_data, 'remember') == 'checked';
-        
-        if (trim($username == '')) {
-          tpl_assign('error', new Error(lang('username value missing')));
-          $this->render();
-        } // if
-        
-        if (trim($password) == '') {
-          tpl_assign('error', new Error(lang('password value missing')));
-          $this->render();
-        } // if
-        
-        $user = Users::getByUsername($username, owner_company());
-        if (!($user instanceof User)) {
-          tpl_assign('error', new Error(lang('invalid login data')));
-          $this->render();
-        } // if
-        
-        if (!$user->isValidPassword($password)) {
-          tpl_assign('error', new Error(lang('invalid login data')));
-          $this->render();
-        } // if
-        
         try {
+          $auth = new BuiltinAuthenticator();
+          //$auth = new DatabaseAuthenticator();
+          //$auth = new HTTPBasicAuthenticator();
+          $user = $auth->authenticate($login_data);
+        } catch (Exception $e) {
+          tpl_assign('error', new Error(lang($e->getMessage())));
+          $this->render();
+        }
+
+        try {
+          $username = array_var($login_data, 'username');
+          $remember = array_var($login_data, 'remember') == 'checked';
+          trace(__FILE__,"login() - logUserIn($username, $remember)");
           CompanyWebsite::instance()->logUserIn($user, $remember);
+          if (isset($_POST['loginLanguage'])) $_SESSION['language'] = $_POST['loginLanguage'];
         } catch(Exception $e) {
+          trace(__FILE__,"login() - exception " . $e->getTraceAsString() );
           tpl_assign('error', new Error(lang('invalid login data')));
           $this->render();
         } // try
-        
+
         $ref_controller = null;
         $ref_action = null;
         $ref_params = array();
@@ -101,10 +116,11 @@
         if (!count($ref_params)) {
           $ref_params = null;
         }
-        
         if ($ref_controller && $ref_action) {
+          trace(__FILE__, "login() - redirectTo($ref_controller, $ref_action, $ref_params)" );
           $this->redirectTo($ref_controller, $ref_action, $ref_params);
         } else {
+          trace(__FILE__, 'login() - redirectTo(dashboard)' );
           $this->redirectTo('dashboard');
         } // if
       } // if
@@ -119,7 +135,11 @@
     */
     function logout() {
       CompanyWebsite::instance()->logUserOut();
-      $this->redirectTo('access', 'login');
+      if(($lrp = config_option('logout_redirect_page')) != false && $lrp != 'default') {
+        $this->redirectToUrl($lrp);
+      } else {
+        $this->redirectTo('access', 'login');	
+      } 
     } // logout
     
     /**
@@ -132,7 +152,7 @@
       $your_email = trim(array_var($_POST, 'your_email'));
       tpl_assign('your_email', $your_email);
       
-      if (array_var($_POST, 'submited') == 'submited') {
+      if (array_var($_POST, 'submitted') == 'submitted') {
         if (!is_valid_email($your_email)) {
           tpl_assign('error', new InvalidEmailAddressError($your_email, lang('invalid email address')));
           $this->render();
@@ -156,6 +176,18 @@
     } // forgot_password
     
     /**
+    * Clear cookies
+    *
+    * @access public
+    * @param void
+    * @return null
+    */
+    function clear_cookies() {
+      CompanyWebsite::instance()->logUserOut();
+      $this->redirectTo('access', 'login');	
+    } // logout
+    
+    /**
     * Finish the installation - create owner company and administrator
     *
     * @param void
@@ -169,7 +201,7 @@
       $form_data = array_var($_POST, 'form');
       tpl_assign('form_data', $form_data);
       
-      if (array_var($form_data, 'submited') == 'submited') {
+      if (array_var($form_data, 'submitted') == 'submitted') {
         try {
           $admin_password = trim(array_var($form_data, 'admin_password'));
           $admin_password_a = trim(array_var($form_data, 'admin_password_a'));
@@ -190,7 +222,6 @@
           // Create the administrator user
           $administrator = new User();
           $administrator->setId(1);
-          $administrator->setCompanyId(1);
           $administrator->setUsername(array_var($form_data, 'admin_username'));
           $administrator->setEmail(array_var($form_data, 'admin_email'));
           $administrator->setPassword($admin_password);
@@ -198,6 +229,15 @@
           $administrator->setAutoAssign(true);
           
           $administrator->save();
+          
+          // Create the contact for administrator
+          $administrator_contact = new Contact();
+          $administrator_contact->setId(1);
+          $administrator_contact->setCompanyId(1);
+          $administrator_contact->setEmail(array_var($form_data, 'admin_email'));
+          $administrator_contact->setUserId($administrator->getId());
+          $administrator_contact->setDisplayName($administrator->getUsername());
+          $administrator_contact->save();
           
           // Create a company
           $company = new Company();

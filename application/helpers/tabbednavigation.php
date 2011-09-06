@@ -7,7 +7,10 @@
   * @return array
   */
   function tabbed_navigation_items() {
-    return TabbedNavigation::instance()->getItems();
+    // PLUGIN HOOK
+    return plugin_manager()->apply_filters('tabbed_navigation_items',
+                                   TabbedNavigation::instance()->getItems());
+    // PLUGIN HOOK
   } // tabbed_navigation_items
   
   /**
@@ -17,7 +20,8 @@
   * @param TabbedNavigationItem $item
   * @return TabbedNavigationItem
   */
-  function add_tabbed_navigation_item(TabbedNavigationItem $item) {
+  function add_tabbed_navigation_item($id, $title, $url) {
+    $item = new TabbedNavigationItem($id, lang($title), $url);
     return TabbedNavigation::instance()->addItem($item);
   } // add_tabbed_navigation
   
@@ -80,7 +84,7 @@
     * @return TabbedNavigationItem
     */
     function __construct($id, $title, $url, $selected = false, $attributes = null) {
-      $this->setID($id);
+      $this->setId($id);
       $this->setTitle($title);
       $this->setURL($url);
       $this->setSelected($selected);
@@ -97,9 +101,9 @@
     * @param null
     * @return string
     */
-    function getID() {
+    function getId() {
       return $this->id;
-    } // getID
+    } // getId
     
     /**
     * Set id value
@@ -108,9 +112,9 @@
     * @param string $value
     * @return null
     */
-    function setID($value) {
+    function setId($value) {
       $this->id = $value;
-    } // setID
+    } // setId
     
     /**
     * Get title
@@ -157,7 +161,7 @@
     } // setURL
     
     /**
-    * Get selecteed
+    * Get selected
     *
     * @access public
     * @param null
@@ -168,7 +172,7 @@
     } // getSelected
     
     /**
-    * Set selecteed value
+    * Set selected value
     *
     * @access public
     * @param boolean $value
@@ -204,7 +208,7 @@
     */
     function setSelectedTab($id) {
       foreach ($this->items as &$item) {
-        $item->setSelected( $item->getID() == $id );
+        $item->setSelected( $item->getId() == $id );
       } // foreach
     } // setSelectedTab
     
@@ -247,7 +251,7 @@
     * @return null
     */
     function addItem(TabbedNavigationItem $item) {
-      $this->items[$item->getID()] = $item;
+      $this->items[$item->getId()] = $item;
       return $item;
     } // addItem
     

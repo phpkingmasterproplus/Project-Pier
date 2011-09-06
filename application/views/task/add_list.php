@@ -1,7 +1,7 @@
 <?php
 
   set_page_title($task_list->isNew() ? lang('add task list') : lang('edit task list'));
-  project_tabbed_navigation(PROJECT_TAB_TASKS);
+  project_tabbed_navigation('tasks');
   project_crumbs(array(
     array(lang('tasks'), get_url('task')),
     array($task_list->isNew() ? lang('add task list') : lang('edit task list'))
@@ -9,6 +9,7 @@
   add_page_action(lang('add task list'), get_url('task', 'add_list'));
 
 ?>
+<?php echo open_html_tag('a', array( 'href' => 'javascript:void(0)', 'onclick' => 'javascript:recoverFormInputs();')) . lang('recover last input') . close_html_tag('a');  ?>
 <?php if ($task_list->isNew()) { ?>
 <form action="<?php echo get_url('task', 'add_list') ?>" method="post">
 <?php } else { ?>
@@ -21,7 +22,30 @@
     <?php echo label_tag(lang('name'), 'taskListFormName', true) ?>
     <?php echo text_field('task_list[name]', array_var($task_list_data, 'name'), array('class' => 'long', 'id' => 'taskListFormName')) ?>
   </div>
-  
+
+  <div>
+    <?php echo label_tag(lang('start date'), null, false) ?>
+    <?php echo pick_date_widget('task_list_start_date', array_var($task_list_data, 'start_date')) ?>
+  </div>
+
+  <div>
+    <?php echo label_tag(lang('due date'), null, false) ?>
+    <?php echo pick_date_widget('task_list_due_date', array_var($task_list_data, 'due_date')) ?>
+  </div>
+
+  <div>
+    <?php echo label_tag(lang('priority'), 'taskListFormPriority') ?>
+    <?php echo input_field('task_list[priority]', array_var($task_list_data, 'priority'), array('class' => 'short', 'id' => 'taskListFormPriority')) ?>
+  </div>
+
+<?php if ( (config_option('enable_efqm')=='yes') && (logged_user()->getProjectPermission($task_list->getProject(), 'tasks-edit_score')) ) { ?>
+  <div>
+    <?php echo label_tag(lang('score'), 'taskListFormScore') ?>
+    <?php echo input_field('task_list[score]', array_var($task_list_data, 'score'), array('class' => 'short', 'id' => 'taskListFormScore')) ?>
+    <?php echo '<a href="' . get_url('task', 'edit_score') . '">' . lang('edit score') . '</a>' ?>
+  </div>
+<?php } // if ?>
+      
   <div>
     <?php echo label_tag(lang('description'), 'taskListFormDescription') ?>
     <?php echo textarea_field('task_list[description]', array_var($task_list_data, 'description'), array('class' => 'short', 'id' => 'taskListFormDescription')) ?>
@@ -38,26 +62,36 @@
     <?php echo yes_no_widget('task_list[is_private]', 'taskListFormIsPrivate', array_var($task_list_data, 'is_private'), lang('yes'), lang('no')) ?>
   </div>
 <?php } // if ?>
-  
+
+<?php if (plugin_active('tags')) { ?>
   <div class="formBlock">
     <?php echo label_tag(lang('tags'), 'taskListFormTags') ?>
     <?php echo project_object_tags_widget('task_list[tags]', active_project(), array_var($task_list_data, 'tags'), array('id' => 'taskListFormTags', 'class' => 'long')) ?>
   </div>
+ <?php } // if ?>
   
 <?php if ($task_list->isNew()) { ?>
   <h2><?php echo lang('tasks') ?></h2>
   <table class="blank">
     <tr>
-      <th><?php echo lang('task') ?>:</th>
-      <th><?php echo lang('assign to') ?>:</th>
+      <th>&nbsp;</th>
+      <th>&nbsp;</th>
+      <th>&nbsp;</th>
     </tr>
 <?php for ($i = 0; $i < 6; $i++) { ?>
-    <tr style="background: <?php echo $i % 2 ? '#fff' : '#e8e8e8' ?>">
-      <td>
+    <tr class="<?php echo $i % 2 ? 'odd' : 'even' ?>">
+      <td><?php echo label_tag(lang('description'), null, false); ?>
         <?php echo textarea_field("task_list[task$i][text]", array_var($task_list_data["task$i"], 'text'), array('class' => 'short')) ?>
       </td>
-      <td>
+      <td><?php echo label_tag(lang('start date'), null, false); ?>
+       <div><?php echo pick_date_widget("task_list_task{$i}_start_date", array_var($task_list_data["task$i"], 'start_date')) ?></div>
+       <?php echo label_tag(lang('due date'), null, false) ?>
+       <?php echo pick_date_widget("task_list_task{$i}_due_date", array_var($task_list_data["task$i"], 'due_date')) ?>
+      </td>
+      <td><?php echo label_tag(lang('assign to'), null, false) ?>
         <?php echo assign_to_select_box("task_list[task$i][assigned_to]", active_project(), array_var($task_list_data["task$i"], 'assigned_to')) ?>
+        <?php echo label_tag(lang('send notification'), null, false) ?>
+        <?php echo checkbox_field("task_list[task$i][send_notification]", array_var($task_list_data["task$i"], 'send_notification'), array_var($task_list_data["task$i"], 'send_notification')) ?>
       </td>
     </tr>
 <?php } // for ?>

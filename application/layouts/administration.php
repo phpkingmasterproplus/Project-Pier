@@ -1,28 +1,34 @@
+<?php $owner_company_name = (owner_company()->getName()) ?>
+<?php $site_name = config_option('site_name', $owner_company_name) ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
-<html>
+<html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <title><?php echo get_page_title() ?> @ <?php echo clean(owner_company()->getName()) ?></title>
-    
+    <title><?php echo get_page_title() ?> | <?php echo clean(owner_company()->getName()) ?></title>
 <?php echo stylesheet_tag('project_website.css') ?> 
+<?php echo stylesheet_tag('colorbox/colorbox.css') ?>
 <?php echo meta_tag('content-type', 'text/html; charset=utf-8', true) ?> 
-<link rel="Shortcut Icon" href="favicon.ico" type="image/x-icon" />
-<?php echo add_javascript_to_page('yui/yahoo/yahoo-min.js') ?>
-<?php echo add_javascript_to_page('yui/dom/dom-min.js') ?>
-<?php echo add_javascript_to_page('yui/event/event-min.js') ?>
-<?php echo add_javascript_to_page('yui/animation/animation-min.js') ?>
-<?php echo add_javascript_to_page('app.js') ?>
-<?php echo use_widget('UserBoxMenu') ?>
+<?php echo link_tag(ROOT_URL.'favicon.ico', 'rel', 'Shortcut Icon', array("type"=>"image/x-icon")) ?>
+<?php add_javascript_to_page('pp.js') ?>
+<?php add_javascript_to_page('jquery.min.js') ?>
+<?php add_javascript_to_page('jquery-ui.min.js') ?>
+<?php add_javascript_to_page('jquery.cookie.js') ?>
+<?php add_javascript_to_page('jquery.colorbox-min.js') ?>
+<?php add_javascript_to_page('jquery.imgareaselect.dev.js') ?>
+<?php add_javascript_to_page('jquery.jeditable.mini.js') ?>
+<?php add_javascript_to_page('jquery-ui-timepicker-addon.js') ?>
 <?php echo render_page_head() ?>
   </head>
   <body>
+<?php include('inlinejs.php'); ?>
 <?php echo render_system_notices(logged_user()) ?>
     <div id="wrapper">
     
       <!-- header -->
       <div id="headerWrapper">
         <div id="header">
-          <h1><a href="<?php echo get_url('administration') ?>"><?php echo lang('administration') ?></a></h1>
+          <h1><a href="<?php echo get_url('dashboard') ?>"><?php echo $site_name ?></a></h1>
           <div id="userboxWrapper"><?php echo render_user_box(logged_user()) ?></div>
+          <h2><a href="<?php echo get_url('administration') ?>"><?php echo lang('administration') ?></a></h2>
         </div>
       </div>
       <!-- /header -->
@@ -43,12 +49,12 @@
         <div id="crumbsBlock">
           <div id="crumbs">
 <?php if (is_array(bread_crumbs())) { ?>
-            <ul>
+            <ul class="">
 <?php foreach (bread_crumbs() as $bread_crumb) { ?>
 <?php if ($bread_crumb->getUrl()) { ?>
-              <li>&raquo; <a href="<?php echo $bread_crumb->getUrl() ?>"><?php echo clean($bread_crumb->getTitle()) ?></a></li>
+              <li><a href="<?php echo $bread_crumb->getUrl() ?>"><?php echo clean($bread_crumb->getTitle()) ?></a></li>
 <?php } else {?>
-              <li>&raquo; <span><?php echo clean($bread_crumb->getTitle()) ?></span></li>
+              <li><span><?php echo clean($bread_crumb->getTitle()) ?></span></li>
 <?php } // if {?>
 <?php } // foreach ?>
             </ul>
@@ -67,18 +73,9 @@
           <div id="error" onclick="this.style.display = 'none'"><?php echo clean(flash_get('error')) ?></div>
 <?php } ?>
 
-          <h1 id="pageTitle"><?php echo get_page_title() ?></h1>
+          <div id="pageHeader"><span id="pageTitle"><?php echo get_page_title() ?></span><?php include('pageoptions.php'); ?></div>
           <div id="pageContent">
             <div id="content">
-<?php if (is_array(page_actions())) { ?>
-            <div id="page_actions">
-              <ul>
-<?php foreach (page_actions() as $page_action) { ?>
-                <li><a href="<?php echo $page_action->getURL() ?>"><?php echo clean($page_action->getTitle()) ?></a></li>
-<?php } // foreach ?>
-              </ul>
-            </div>
-<?php } // if ?>
               <!-- Content -->
               <?php echo $content_for_layout ?>
               <!-- /Content -->
@@ -99,7 +96,7 @@
             <?php echo lang('footer copy without homepage', date('Y'), clean(owner_company()->getName())) ?>
 <?php } // if ?>
           </div>
-          <div id="productSignature"><?php echo product_signature() ?></div>
+          <div id="productSignature"><?php echo product_signature() ?><span id="request_duration"><?php printf(' in %.3f seconds', (microtime(true) - $GLOBALS['request_start_time']) ); ?></span> <span id="current_datetime"><?php echo date('c/I[W]'); ?></span></div>
         </div>
       </div>
       <!-- /content wrapper -->

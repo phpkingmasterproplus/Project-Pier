@@ -10,6 +10,13 @@
   * @http://www.projectpier.org/
   */
   class Template {
+
+    /**
+     * Class instance
+     *
+     * @var Object
+     */
+    private static $_instance;
     
     /**
     * Array of template variables
@@ -35,7 +42,7 @@
     } // assign
     
     /**
-    * Display template and retur output as string
+    * Display template and return output as string
     *
     * @param string $template Template path (absolute path or path relative to 
     *   the templates dir)
@@ -48,7 +55,8 @@
         $this->includeTemplate($template);
       } catch(Exception $e) {
         ob_end_clean();
-        throw $e;
+        die("<xmp>$e</xmp>");
+        //throw $e;
       } // try
       return ob_get_clean();
     } // fetch
@@ -86,12 +94,11 @@
     * @param void
     * @return Template
     */
-    function instance() {
-      static $instance;
-      if (!instance_of($instance, 'Template')) {
-        $instance = new Template();
-      } // if
-      return $instance;
+    static function instance() {
+      if(!isset(self::$_instance)) {
+        self::$_instance = new self;
+      }
+      return self::$_instance;
     } // instance
   
   } // Template

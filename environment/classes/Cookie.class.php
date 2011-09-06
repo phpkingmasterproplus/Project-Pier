@@ -28,18 +28,22 @@
     * @return null
     */
     static function setValue($name, $value, $expiration = null) {
+      
       $expiration_time = DateTimeValueLib::now();
       if ((integer) $expiration > 0) {
         $expiration_time->advance($expiration);
       } else {
-        $expiration_time->advance(3600); // one hour
+        $expiration_time->advance(3*3600); // three hour
       } // if
       
+      // if $expiration is null, set the cookie to expire when the session is over
+      $expiration_timestamp = is_null($expiration) ? null : $expiration_time->getTimestamp();
+
       $path = defined('COOKIE_PATH') ? COOKIE_PATH : '/';
       $domain = defined('COOKIE_DOMAIN') ? COOKIE_DOMAIN : '';
       $secure = defined('COOKIE_SECURE') ? COOKIE_SECURE : false;
       
-      setcookie($name, $value, $expiration_time->getTimestamp(), $path, $domain, $secure);
+      setcookie($name, $value, $expiration_timestamp, $path, $domain, $secure);
     } // setValue
     
     /**

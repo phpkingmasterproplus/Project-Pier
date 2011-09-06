@@ -53,7 +53,7 @@
     } // isToday
     
     /**
-    * Returnst true if this application log was made yesterday
+    * Returns true if this application log entry was made yesterday
     *
     * @param void
     * @return boolean
@@ -71,6 +71,32 @@
              $now->getMonth() == $day_after->getMonth() && 
              $now->getYear() == $day_after->getYear();
     } // isYesterday
+
+    /**
+    * Return project id with log entry or associated object
+    *
+    * @access public
+    * @param void
+    * @return integer
+    */
+    function getProjectId() {
+      $project_id = parent::getProjectId();
+      if ($project_id>0) { 
+         return $project_id;
+      }
+      try {
+        $object = $this->getObject();
+        if ($object instanceof Project) {
+          return $object->getId();
+        }
+        if ($object instanceof ProjectDataObject) {
+          return $object->getProjectId();
+        }
+      } catch(Exception $e) {
+        return false;
+      }
+      return false;
+    } // getProjectId
   
     /**
     * Return project
@@ -128,10 +154,13 @@
     * @param void
     * @return string
     */
-    function getObjectTypeName() {
-      $object = $this->getObject();
-      return $object instanceof ApplicationDataObject ? $object->getObjectTypeName() : null;
-    } // getObjectTypeName
+   function getObjectTypeName() {
+     $mgr = $this->getRelObjectManager(); // string
+     $obj = new $mgr();                   // instance of $mgr
+     $obj = $obj->getItemClass();         // string
+     $obj = new $obj();                   // instance of item class
+     return $obj instanceof ApplicationDataObject ? $obj->getObjectTypeName() : $mgr;
+   } // getObjectTypeName
     
   } // ApplicationLog 
 

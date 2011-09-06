@@ -19,13 +19,19 @@
     * @param Angie_Feed $feed
     * @return string
     */
+
     function render(Angie_Feed $feed) {
-      $result  = "<rss version=\"2.0\">\n<channel>\n";
+      $result  = "<rss version=\"2.0\">\n";
+      //$result  = "<rss version=\"2.0\" xmlns:atom=\"http://www.w3.org/2005/Atom\">\n";
+      $result .= "<channel>\n";
+      $feed_url = externalUrl(clean($feed->getLink()));
+      //$result .= "<atom:link href=\"$feed_url\" rel=\"self\" type=\"application/rss+xml\" />\n";
       $result .= '<title>' . clean($feed->getTitle()) . "</title>\n";
-      $result .= '<link>' . clean($feed->getLink()) . "</link>\n";
+      $result .= '<link>' . $feed_url . "</link>\n";
       if ($description = trim($feed->getDescription())) {
-        $result .= '<description>' . clean($description) . "</description>\n";
+        $description = "empty";
       } // if
+      $result .= '<description>' . clean($description) . "</description>\n";
       if ($language = trim($feed->getLanguage())) {
         $result .= '<language>' . clean($language) . "</language>\n";
       } // if
@@ -47,24 +53,43 @@
     private function renderItem(Angie_Feed_Item $item) {
       $result  = "<item>\n";
       $result .= '<title>' . clean($item->getTitle()) . "</title>\n";
-      $result .= '<link>' . clean($item->getLink()) . "</link>\n";
+      $link = externalUrl(clean($item->getLink()));
+      $result .= '<link>' . $link . "</link>\n";
+      //$result .= '<guid>' . $link . "</guid>\n";
       if ($description = trim($item->getDescription())) {
-        $result .= '<description>' . clean($description) . "</description>\n";
+        $description = "empty";
       } // if
+      $result .= '<description>' . clean($description) . "</description>\n";
       
       $author = $item->getAuthor();
       if ($author instanceof Angie_Feed_Author) {
         $result .= '<author>' . clean($author->getEmail()) . ' (' . clean($author->getName()) . ")</author>\n";
       } // if
       
+      $timestamp = NULL;
       $pubdate = $item->getPublicationDate();
       if ($pubdate instanceof DateTimeValue) {
-        $result .= '<pubdate>' . $pubdate->toRSS() . "</pubdate>\n";
+        $result .= '<pubDate>' . $pubdate->toRSS() . "</pubDate>\n";
+        $timestamp = $pubdate->getTimestamp();
       } // if
+      $result .= '<guid>' . $this->buildGuid(clean($item->getLink()), $timestamp) . "</guid>\n";
       
       $result .= '</item>';
       return $result;
     } // renderItem
+
+    /**
+    * Create a guid
+    *
+    * @param string $url
+    * @param int $timestamp
+    * @return string
+    */
+    private function buildGuid($url, $timestamp) {
+      $url = preg_replace('/&amp;\d*&amp;/', '&amp;', $url); // remove non-constant parameter
+      if (!is_null($timestamp)) $url .= "&amp;time_id=" . $timestamp;
+      return $url;
+    }
   
   } // Angie_Feed_Renderer_RSS2
 

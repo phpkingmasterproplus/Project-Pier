@@ -7,14 +7,17 @@
     'register' => 'Register',
     'login' => 'Login',
     'logout' => 'Logout',
-    'hide welcome info' => '&raquo; Hide this info permanently',
+    'edit logo' => 'Edit logo',
+    'upload logo' => 'Set logo',
+    'delete logo' => 'Delete logo',
     
     // Companies
     'add company' => 'Add company',
-    'edit company' => 'Update company info',
+    'edit company' => 'Edit company',
     'delete company' => 'Delete company',
-    'edit company logo' => 'Update logo',
+    'edit company logo' => 'Set logo',
     'delete company logo' => 'Delete logo',
+    'show map' => 'Show map',
     
     // Clients
     'add client' => 'Add client',
@@ -25,31 +28,56 @@
     'add user' => 'Add user',
     'edit user' => 'Edit user',
     'delete user' => 'Delete user',
+    'add user account' => 'Add user',
+    
+    // Contacts
+    'add contact' => 'Add contact',
+    'edit contact' => 'Edit contact',
+    'delete contact' => 'Delete contact',
+    'edit user account' => 'Edit user account',
+    'delete user account' => 'Delete user account',
+    'toggle favorite' => 'Toggle favorite',
+    'done adding contacts' => 'Done adding contacts',
+    'list view' => 'List',
+    'detail view' => 'Details',
     
     // Project
     'add project' => 'Add project',
+    'copy project' => 'Copy project',
     'edit project' => 'Edit project details',
     'delete project' => 'Delete project',
     'mark project as finished' => 'Mark project as finished',
     'mark project as active' => 'Mark project as active',
+    'can manage projects' => 'Can manage his/her own projects',
+    'projects shift dates' => 'Shift dates',
+    'projects shift dates desc' => 'Dates become "now" plus the difference between the original date and the original project creation date',
+    'add days' => 'Days to add to all dates in the project',
+    'add text snippet' => 'Add text snippet',
+    'add text snippets' => 'Add text snippets',
     
     // Messages
     'add message' => 'Add message',
     'edit message' => 'Edit message',
+    'move message' => 'Move message',
     'delete message' => 'Delete message',
     'view message' => 'View message',
-    'update message options' => 'Update options',
+    'update message options' => 'Update',
     'subscribe to message' => 'Subscribe',
     'unsubscribe from message' => 'Unsubscribe',
     
     // Comments
     'add comment' => 'Post comment',
     'edit comment' => 'Edit comment',
+    'add status update' => 'Post status update',
     
     // Task list
     'add task list' => 'Add task list',
     'edit task list' => 'Edit task list',
+    'copy task list' => 'Copy task list',
+    'move task list' => 'Move task list',
     'delete task list' => 'Delete task list',
+    'download task list' => 'Download',
+    'pdf' => 'PDF',
     'reorder tasks' => 'Reorder tasks',
     
     // Task
@@ -58,50 +86,45 @@
     'delete task' => 'Delete task',
     'mark task as completed' => 'Mark task as completed',
     'mark task as open' => 'Mark task as open',
-    
+    'view task' => 'View task',
+    'view assigned tasks' => 'View assigned task',
+
     // Milestone
+    'view milestone' => 'View milestone',
     'add milestone' => 'Add milestone',
     'edit milestone' => 'Edit milestone',
     'delete milestone' => 'Delete milestone',
-    
+    'view calendar' => 'View calendar',
+    'mark milestone as completed' => 'Mark as completed',
+    'mark milestone as open' => 'Reopen',
+    'milestones add days from now' => 'Days from now to set due date of copied milestones',
+
     // People
     'update people' => 'Update',
     'remove user from project' => 'Remove from project',
     'remove company from project' => 'Remove from project',
     
     // Password
-    'update profile' => 'Update profile',
+    'update profile' => 'Edit profile',
     'change password' => 'Change password',
-    'update avatar' => 'Update avatar',
-    'delete current avatar' => 'Delete current avatar',
-    
-    // Forms
-    'add form' => 'Add form',
-    'edit form' => 'Edit form',
-    'delete form' => 'Delete form',
-    'submit project form' => 'Submit',
-    
-    // Files
-    'add file' => 'Add file',
-    'edit file' => 'Edit file',
-    'delete file' => 'Delete file',
-    
-    'add folder' => 'Add folder',
-    'edit folder' => 'Edit folder',
-    'delete folder' => 'Delete folder',
-    
-    'edit file revisions' => 'Edit revision',
-    'delete file revision' => 'Delete revision',
-    
-    'attach file' => 'Attach file',
-    'attach files' => 'Attach files',
-    'attach more files' => 'Attach more files',
-    'detach file' => 'Detach file',
-    'detach files' => 'Detach files',
+    'update avatar' => 'Edit logo',
+    'delete current avatar' => 'Delete logo',
     
     // Permissions
-    'update permissions' => 'Update permissions',
-    
+    'update permissions' => 'Edit permissions',
+    'edit permissions' => 'Edit permissions',
+
+    // Notifications
+    'send notification' => 'Send notification',
+
+    // Download
+    'task download header' => "Project\tMilestone\tTask List\tStatus\tDescription\tId\tStatus\tInfo\tAssigned to\tTask\r\n",
+    '%s items downloaded' => '%s items in download',
+    'nothing to download' => "No data available in '%s' to download",
+    'download task lists' => 'Download all tasks',
+
+    // Internationalization
+    'select language' => 'Select language',
   ); // array
 
 ?>

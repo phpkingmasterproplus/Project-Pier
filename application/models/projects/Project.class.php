@@ -2,11 +2,46 @@
 
   /**
   * Project class
-  * Generated on Sun, 26 Feb 2006 23:10:34 +0100 by DataObject generation tool
   *
   * @http://www.projectpier.org/
   */
   class Project extends BaseProject {
+
+    // ---------------------------------------------------
+    // Page Attachments
+    // ---------------------------------------------------
+    
+    /** Cache of all page attachments
+    *
+    * @var array
+    */
+    private $all_page_attachments;
+
+    /**
+    * This object is taggable
+    *
+    * @var boolean
+    */
+    protected $is_taggable = true;
+    
+    // ---------------------------------------------------
+    //  Projects
+    // ---------------------------------------------------
+    
+    /**
+    * Cache of all subprojects
+    *
+    * @var array
+    */
+    private $all_subprojects;
+    
+    /**
+    * Cached array of subprojects that user can access. If user is member of owner company
+    * $all_subprojects will be used (members of owner company can browse all subprojects)
+    *
+    * @var array
+    */
+    private $subprojects;
     
     // ---------------------------------------------------
     //  Messages
@@ -28,7 +63,7 @@
     private $messages;
     
     /**
-    * Array of all important messages (incliduing private ones)
+    * Array of all important messages (including private ones)
     *
     * @var array
     */
@@ -108,8 +143,8 @@
     private $all_completed_milestones;
     
     /**
-    * Cached array of completed milestones - is_private check is made before retriving meaning that if
-    * user is no member of owner company all private data will be hiddenas
+    * Cached array of completed milestones - is_private check is made before retrieving meaning that if
+    * user is no member of owner company all private data will be hidden
     *
     * @var array
     */
@@ -164,6 +199,62 @@
     */
     private $completed_task_lists;
     
+    // ---------------------------------------------------
+    //  Tickets
+    // ---------------------------------------------------
+
+    /**
+    * All categories in this project
+    *
+    * @var array
+    */
+    private $categories;
+
+    /**
+    * All tickets in this project
+    *
+    * @var array
+    */
+    private $all_tickets;
+
+    /**
+    * Array of all tickets. If user is not member of owner company private tickets
+    * will be excluded from the list
+    *
+    * @var array
+    */
+    private $tickets;
+
+    /**
+    * All open tickets in this project
+    *
+    * @var array
+    */
+    private $all_open_tickets;
+
+    /**
+    * Array of open tickets. If user is not member of owner company private tickets
+    * will be excluded from the list
+    *
+    * @var array
+    */
+    private $open_tickets;
+
+    /**
+    * All closed tickets in this project
+    *
+    * @var array
+    */
+    private $all_closed_tickets;
+
+    /**
+    * Array of closed tickets. If user is not member of owner company private tickets
+    * will be excluded from the list
+    *
+    * @var array
+    */
+    private $closed_tickets;
+
     // ---------------------------------------------------
     //  Tags
     // ---------------------------------------------------
@@ -230,7 +321,7 @@
     private $important_files;
     
     /**
-    * All orphened files, user permissions are not checked
+    * All orphaned files, user permissions are not checked
     *
     * @var array
     */
@@ -242,6 +333,82 @@
     * @var array
     */
     private $orphaned_files;
+
+    /**
+    * All times
+    *
+    * @var array
+    */
+    private $all_times;
+
+    // ---------------------------------------------------
+    //  Milestones
+    // ---------------------------------------------------
+    
+    /**
+    * Return parent project
+    *
+    * @access public
+    * @param void
+    * @return Project or NULL
+    */
+    function getParent() {
+      return Projects::findById($this->getParentId());
+    } // getTaskList
+
+    /**
+    * Return all milestones, don't filter them by is_private stamp based on users permissions
+    *
+    * @param void
+    * @return array
+    */
+    function getAllSubprojects() {
+      if (is_null($this->all_subprojects)) {
+        $this->all_subprojects = Projects::findAll(array(
+          'conditions' => array('`parent_id` = ?', $this->getId()),
+          'order' => 'name'
+        )); // findAll
+      } // if
+      return $this->all_subprojects;
+    } // getAllSubprojects
+    
+    /**
+    * Return subprojects
+    *
+    * @access public
+    * @param void
+    * @return array
+    */
+    function getSubprojects() {
+      if (logged_user()->isMemberOfOwnerCompany()) {
+        return $this->getAllSubprojects();
+      }
+      if (is_null($this->subprojects)) {
+        $this->subprojects = Projects::findAll(array(
+          // 'conditions' => array('`parent_id` = ? AND `is_private` = ?', $this->getId(), 0),
+          'conditions' => array('`parent_id` = ?', $this->getId()),
+          'order' => 'name'
+        )); // findAll
+      } // if
+      return $this->subprojects;
+    } // getSubprojects
+
+    // ---------------------------------------------------
+    // Page Attachments
+    // ---------------------------------------------------
+    
+    /**
+    * This function will return all page attachments in project
+    *
+    * @param void
+    * @return array
+    */
+    function getAllPageAttachments() {
+      if (is_null($this->all_page_attachments)) {
+        $this->all_page_attachments = PageAttachments::getAllByProject($this);
+      }
+      return $this->all_page_attachments;
+    } // getAllPageAttachments
     
     // ---------------------------------------------------
     //  Messages
@@ -350,7 +517,7 @@
     } // getMilestones
     
     /**
-    * Return all opet milestones without is_private check
+    * Return all open milestones without is_private check
     *
     * @param void
     * @return array
@@ -496,6 +663,70 @@
       } // if
     } // splitOpenMilestones
     
+    /**
+    * Return array of milestones for the month specified that the user has
+    * access to.
+    *
+    * @access public
+    * @param int $year
+    * @param int $month
+    * @return array
+    */
+    function getMilestonesByMonth($year, $month) {
+      $from_date = DateTimeValueLib::make(0, 0, 0, $month, 1, $year);
+      $to_date = new DateTimeValue(strtotime('+1 month -1 day', $from_date->getTimestamp()));
+
+      if (logged_user()->isMemberOfOwnerCompany()) {
+        $conditions = array('`project_id` = ? AND (`due_date` >= ? AND `due_date` < ?)', $this->getId(), $from_date, $to_date);
+      } else {
+        $conditions = array('`project_id` = ? AND (`due_date` >= ? AND `due_date` < ?) AND `is_private` = ?', $this->getId(), $from_date, $to_date, 0);
+      }
+      return ProjectMilestones::findAll(array(
+        'conditions' => $conditions,
+        'order' => 'due_date'
+      )); // findAll
+    } // getMilestonesByMonth
+
+    // ---------------------------------------------------
+    //  Time
+    // ---------------------------------------------------
+  
+    /**
+    * Return all times, don't filter them by is_private stamp based on users permissions
+    *
+    * @param void
+    * @return array
+    */
+    function getAllTimes() {
+      if (!plugin_active('times')) return null;
+      if(is_null($this->all_times)) {
+        $this->all_times = ProjectTimes::findAll(array(
+          'conditions' => array('`project_id` = ?', $this->getId()),
+          'order' => 'done_date desc'
+        )); // findAll
+      } // if
+      return $this->all_times;
+    } // getAllTimes
+
+    /**
+    * Return all project time
+    *
+    * @access public
+    * @param void
+    * @return array
+    */
+    function getTimes() {
+      if (!plugin_active('times')) return null;
+      if(logged_user()->isMemberOfOwnerCompany()) return $this->getAllTimes(); // member of owner company
+      if(is_null($this->times)) {
+        $this->times = ProjectTimes::findAll(array(
+          'conditions' => array('`project_id` = ? AND `is_private` = ?', $this->getId(), 0),
+          'order' => 'done_date desc'
+        )); // findAll
+      } // if
+      return $this->times;
+    } // getTimes
+
     // ---------------------------------------------------
     //  Task lists
     // ---------------------------------------------------
@@ -517,7 +748,7 @@
     } // getAllTaskLists
     
     /**
-    * Return all taks lists
+    * Return all task lists
     *
     * @access public
     * @param void
@@ -607,6 +838,150 @@
       } // if
       return $this->completed_task_lists;
     } // getCompletedTaskLists
+
+    /**
+    * Return array of milestones for the month specified that the user has
+    * access to.
+    *
+    * @access public
+    * @param int $year
+    * @param int $month
+    * @return array
+    */
+    function getTaskListsByMonth($year, $month) {
+      $from_date = DateTimeValueLib::make(0, 0, 0, $month, 1, $year);
+      $to_date = new DateTimeValue(strtotime('+1 month -1 day', $from_date->getTimestamp()));
+
+      if (logged_user()->isMemberOfOwnerCompany()) {
+        $conditions = array('`project_id` = ? AND (`due_date` >= ? AND `due_date` < ?)', $this->getId(), $from_date, $to_date);
+      } else {
+        $conditions = array('`project_id` = ? AND (`due_date` >= ? AND `due_date` < ?) AND `is_private` = ?', $this->getId(), $from_date, $to_date, 0);
+      }
+      return ProjectTaskLists::findAll(array(
+        'conditions' => $conditions,
+        'order' => 'due_date'
+      )); // findAll
+    } // getMilestonesByMonth
+
+   
+    // ---------------------------------------------------
+    //  Tickets
+    // ---------------------------------------------------
+
+    /**
+    * Return all categories
+    *
+    * @param void
+    * @return array
+    */
+    function getCategories() {
+      if(is_null($this->categories)) {
+        $this->categories = ProjectCategories::getProjectCategories($this);
+      } // if
+      return $this->categories;
+    } // getCategories
+
+    /**
+    * This function will return all tickets in project and it will not exclude private
+    * tickets if logged user is not member of owner company
+    *
+    * @param void
+    * @return array
+    */
+    function getAllTickets() {
+      if (!plugin_active('tickets')) return null;
+      if(is_null($this->all_tickets)) {
+        $this->all_tickets = ProjectTickets::getProjectTickets($this, true);
+      } // if
+      return $this->all_tickets;
+    } // getAllTickets
+
+    /**
+    * Return only the tickets that current user can see (if not member of owner company private
+    * tickets will be excluded)
+    *
+    * @param void
+    * @return array
+    */
+    function getTickets() {
+      if (!plugin_active('tickets')) return null;
+      if(logged_user()->isMemberOfOwnerCompany()) {
+        return $this->getAllTickets(); // members of owner company can view all tickets
+      } // if
+
+      if(is_null($this->tickets)) {
+        $this->tickets = ProjectTickets::getProjectTickets($this, false);
+      } // if
+      return $this->tickets;
+    } // getTickets
+
+    /**
+    * This function will return all open tickets in project and it will not exclude private
+    * tickets if logged user is not member of owner company
+    *
+    * @param void
+    * @return array
+    */
+    function getAllOpenTickets() {
+      if (!plugin_active('tickets')) return null;
+      if(is_null($this->all_open_tickets)) {
+        $this->all_open_tickets = ProjectTickets::getOpenProjectTickets($this, true);
+      } // if
+      return $this->all_open_tickets;
+    } // getAllOpenTickets
+
+    /**
+    * Return only the open tickets that current user can see (if not member of owner company private
+    * tickets will be excluded)
+    *
+    * @param void
+    * @return array
+    */
+    function getOpenTickets() {
+      if (!plugin_active('tickets')) return null;
+      if(logged_user()->isMemberOfOwnerCompany()) {
+        return $this->getAllOpenTickets(); // members of owner company can view all tickets
+      } // if
+
+      if(is_null($this->open_tickets)) {
+        $this->open_tickets = ProjectTickets::getOpenProjectTickets($this, false);
+      } // if
+      return $this->open_tickets;
+    } // getOpenTickets
+
+    /**
+    * This function will return all closed tickets in project and it will not exclude private
+    * tickets if logged user is not member of owner company
+    *
+    * @param void
+    * @return array
+    */
+    function getAllClosedTickets() {
+      if (!plugin_active('tickets')) return null;
+      if(is_null($this->all_closed_tickets)) {
+        $this->all_closed_tickets = ProjectTickets::getClosedProjectTickets($this, true);
+      } // if
+      return $this->all_closed_tickets;
+    } // getAllClosedTickets
+    
+    /**
+    * Return only the closed tickets that current user can see (if not member of owner company private 
+    * tickets will be excluded)
+    *
+    * @param void
+    * @return array
+    */
+    function getClosedTickets() {
+      if (!plugin_active('tickets')) return null;
+      if(logged_user()->isMemberOfOwnerCompany()) {
+        return $this->getAllClosedTickets(); // members of owner company can view all tickets
+      } // if
+      
+      if(is_null($this->closed_tickets)) {
+        $this->closed_tickets = ProjectTickets::getClosedProjectTickets($this, false);
+      } // if
+      return $this->closed_tickets;
+    } // getClosedTickets
     
     // ---------------------------------------------------
     //  Tags
@@ -632,7 +1007,7 @@
     * 
     *  - messages
     *  - milestones
-    *  - tast lists
+    *  - task lists
     *  - files
     *
     * @access public
@@ -645,7 +1020,10 @@
         'messages'   => Tags::getProjectObjects($this, $tag, 'ProjectMessages', $exclude_private),
         'milestones' => Tags::getProjectObjects($this, $tag, 'ProjectMilestones', $exclude_private),
         'task_lists' => Tags::getProjectObjects($this, $tag, 'ProjectTaskLists', $exclude_private),
+        'tickets'    => Tags::getProjectObjects($this, $tag, 'ProjectTickets', $exclude_private),
         'files'      => Tags::getProjectObjects($this, $tag, 'ProjectFiles', $exclude_private),
+        'wiki'       => Tags::getProjectObjects($this, $tag, 'Wiki', $exclude_private),
+        'links'      => Tags::getProjectObjects($this, $tag, 'ProjectLinks', $exclude_private),
       ); // array
     } // getObjectsByTag
     
@@ -711,6 +1089,7 @@
     * @return array
     */
     function getAllForms() {
+      if(!plugin_active('form')) { return null; }
       if (is_null($this->all_forms)) {
         $this->all_forms = ProjectForms::findAll(array(
           'conditions' => array('`project_id` = ?', $this->getId()),
@@ -727,6 +1106,7 @@
     * @return null
     */
     function getVisibleForms($only_enabled = false) {
+      if(!plugin_active('form')) { return null; }
       $conditions = '`project_id` = ' . DB::escape($this->getId());
       if ($only_enabled) {
         $conditions .= ' AND `is_enabled` = ' . DB::escape(true);
@@ -771,6 +1151,25 @@
     } // getCompanies
     
     /**
+    * Get all companies involved in this project visible to the given user
+    *
+    * @access public
+    * @param User $user The user to filter with
+    * @param boolean $include_owner_company Include owner in result
+    * @return array
+    */
+    function getVisibleCompanies($user, $include_owner_company = false) {
+      $visible = array();
+      $companies = $this->getCompanies($include_owner_company);
+      foreach($companies as $company) {
+        if (logged_user()->canSeeCompany($company)) {
+          $visible[] = $company;
+        }
+      }
+      return $visible;
+    } // getVisibleCompanies
+
+    /**
     * Remove all companies from project
     *
     * @access public
@@ -810,6 +1209,26 @@
       } // if
     } // getUsers
     
+    
+    /**
+    * Get all users involved in this project visible to the given user
+    *
+    * @access public
+    * @param User $user The user to filter with
+    * @param boolean $include_owner_company Include owner in result
+    * @return array
+    */
+    function getVisibleUsers($user) {
+      $visible = array();
+      $users = $this->getUsers(false);
+      foreach($users as $user) {
+        if (logged_user()->canSeeUser($user)) {
+          $visible[] = $user;
+        }
+      }
+      return $visible;
+    } // getVisibleUsers
+
     /**
     * Remove all users from project
     *
@@ -898,21 +1317,52 @@
       
       return ProjectTasks::findAll(array(
         'conditions' => array('`task_list_id` IN (?) AND ((`assigned_to_user_id` = ? AND `assigned_to_company_id` = ?) OR (`assigned_to_user_id` = ? AND `assigned_to_company_id` = ?) OR (`assigned_to_user_id` = ? AND `assigned_to_company_id` = ?)) AND `completed_on` = ?', $task_list_ids, $user->getId(), $user->getCompanyId(), 0, $user->getCompanyId(), 0, 0, EMPTY_DATETIME),
-        'order' => '`created_on`'
+        //'conditions' => array('((`assigned_to_user_id` = ? AND `assigned_to_company_id` = ?) OR (`assigned_to_user_id` = ? AND `assigned_to_company_id` = ?) OR (`assigned_to_user_id` = ? AND `assigned_to_company_id` = ?)) AND `completed_on` = ?', $task_list_ids, $user->getId(), $user->getCompanyId(), 0, $user->getCompanyId(), 0, 0, EMPTY_DATETIME),
+        'order' => '`task_list_id`, `due_date`'
       )); // findAll
     } // getUsersTasks
     
     // ---------------------------------------------------
-    //  Files
+    //  User tickets
     // ---------------------------------------------------
     
+    /**
+    * Return array of task that are assigned to specific user or his company
+    *
+    * @param User $user
+    * @param array $options
+    * @param boolean $include_company
+    * @return array
+    */
+    function getUsersTickets(User $user, $options = null, $include_company = false) {
+      if (!plugin_active('tickets')) return null;
+      if ($include_company) {      
+        $conditions = DB::prepareString('`project_id` = ? AND ((`assigned_to_user_id` = ? AND `assigned_to_company_id` = ?) OR (`assigned_to_user_id` = ? AND `assigned_to_company_id` = ?) OR (`assigned_to_user_id` = ? AND `assigned_to_company_id` = ?) OR `created_by_id`= ?) AND `closed_on` = ?', array($this->getId(), $user->getId(), $user->getCompanyId(), 0, $user->getCompanyId(), 0, 0, $user->getId(), EMPTY_DATETIME));
+      } else {
+        $conditions = DB::prepareString('`project_id` = ? AND `assigned_to_user_id` = ? AND `closed_on` = ?', array($this->getId(), $user->getId(), EMPTY_DATETIME));
+      } // if
+      if(!$user->isMemberOfOwnerCompany()) {
+        $conditions .= DB::prepareString(' AND `is_private` = ?', array(0));
+      } // if
+      $options['conditions'] = $conditions;
+      if (!isset($options['order'])) {
+        $options['order'] = '`created_on`';
+      }
+      return ProjectTickets::findAll($options); // findAll
+    } // getUsersTickets
+    
+    // ---------------------------------------------------
+    //  Files
+    // ---------------------------------------------------
+
     function getFolders() {
+      if(!plugin_active('files')) { return null; }
       if (is_null($this->folders)) {
         $this->folders = ProjectFolders::getProjectFolders($this);
       } // if
       return $this->folders;
     } // getFolders
-    
+        
     /**
     * Return all important files
     *
@@ -920,6 +1370,8 @@
     * @return array
     */
     function getAllImportantFiles() {
+      trace(__FILE__,'getAllImportantFiles()');
+      if(!plugin_active('files')) { return null; }
       if (is_null($this->all_important_files)) {
         $this->all_important_files = ProjectFiles::getImportantProjectFiles($this, true);
       } // if
@@ -933,6 +1385,8 @@
     * @return array
     */
     function getImportantFiles() {
+      trace(__FILE__,'getImportantFiles()');
+      if(!plugin_active('files')) { return null; }
       if (logged_user()->isMemberOfOwnerCompany()) {
         return $this->getAllImportantFiles();
       } // if
@@ -950,6 +1404,7 @@
     * @return array
     */
     function getAllOrphanedFiles() {
+      if(!plugin_active('files')) { return null; }
       if (is_null($this->all_orphaned_files)) {
         $this->all_orphaned_files = ProjectFiles::getOrphanedFilesByProject($this, true);
       } //
@@ -963,6 +1418,7 @@
     * @return array
     */
     function getOrphanedFiles() {
+      if(!plugin_active('files')) { return null; }
       if (is_null($this->orphaned_files)) {
         $this->orphaned_files = ProjectFiles::getOrphanedFilesByProject($this, logged_user()->isMemberOfOwnerCompany());
       } // if
@@ -1007,18 +1463,18 @@
     * @return null
     */
     function canAdd(User $user) {
-      return $user->isAccountOwner() || $user->isAdministrator(owner_company());
+      return $user->isAccountOwner() || $user->isAdministrator(owner_company()) || $user->canManageProjects();
     } // canAdd
     
     /**
-    * Returns true if user can update speicific project
+    * Returns true if user can update specific project
     *
     * @access public
     * @param User $user
     * @return boolean
     */
     function canEdit(User $user) {
-      return $user->isAccountOwner() || $user->isAdministrator(owner_company());
+      return ($this->getCreatedById() == $user->getId()) || $user->isAccountOwner() || $user->isAdministrator(owner_company());
     } // canEdit
     
     /**
@@ -1029,7 +1485,7 @@
     * @return boolean
     */
     function canDelete(User $user) {
-      return $user->isAccountOwner() || $user->isAdministrator(owner_company());
+      return ($this->getCreatedById() == $user->getId()) || $user->isAccountOwner() || $user->isAdministrator(owner_company());
     } // canDelete
     
     /**
@@ -1051,7 +1507,7 @@
     * @return boolean
     */
     function canChangePermissions(User $user) {
-      return $user->isAccountOwner() || $user->isAdministrator(owner_company());
+      return ($this->getCreatedById() == $user->getId()) || $user->isAccountOwner() || $user->isAdministrator(owner_company());
     } // canChangePermissions
     
     /**
@@ -1066,7 +1522,7 @@
       if ($remove_company->isOwner()) {
         return false;
       }
-      return $user->isAccountOwner() || $user->isAdministrator();
+      return ($this->getCreatedById() == $user->getId()) || $user->isAccountOwner() || $user->isAdministrator();
     } // canRemoveCompanyFromProject
     
     /**
@@ -1081,7 +1537,7 @@
       if ($remove_user->isAccountOwner()) {
         return false;
       }
-      return $user->isAccountOwner() || $user->isAdministrator();
+      return ($this->getCreatedById() == $user->getId()) || $user->isAccountOwner() || $user->isAdministrator();
     } // canRemoveUserFromProject
     
     // ---------------------------------------------------
@@ -1130,6 +1586,16 @@
     } // getMilestonesUrl
     
     /**
+    * Return project tickets index page URL
+    *
+    * @param void
+    * @return string
+    */
+    function getTicketsUrl() {
+      return get_url('tickets', 'index', array('active_project' => $this->getId()));
+    } // getTicketsUrl
+
+    /**
     * Return project forms index page URL
     *
     * @param void
@@ -1150,6 +1616,16 @@
     } // getPeopleUrl
     
     /**
+    * Return project settings page URL
+    *
+    * @param void
+    * @return string
+    */
+    function getSettingsUrl() {
+      return get_url('project_settings', 'index', array('active_project' => $this->getId()));
+    } // getSettingsUrl
+    
+    /**
     * Return project permissions page URL
     *
     * @param void
@@ -1163,19 +1639,19 @@
     * Return search URL
     *
     * @param string $search_for
-    * @param integer $page
+    * @param string placeholder for search page
     * @return string
     */
-    function getSearchUrl($search_for = null, $page = null) {
+    function getSearchUrl($search_for = null, $page = '#PAGE#') {
       if (trim($search_for) <> '') {
         $params = array(
           'active_project' => $this->getId(),
           'search_for' => $search_for,
-          'page' => (integer) $page > 0 ? (integer) $page : 1
+          'page' =>  $page,
         ); // array
         return get_url('project', 'search', $params);
       } else {
-        return ROOT_URL . '/index.php';
+        return ROOT_URL . 'index.php';
       } // if
     } // getSearchUrl
     
@@ -1183,14 +1659,17 @@
     * Return edit project URL
     *
     * @access public
-    * @param void
+    * @param string $redirect_to URL where we need to redirect user when edit is done
     * @return string
     */
-    function getEditUrl() {
-      return get_url('project', 'edit', array(
-        'id' => $this->getId(),
-        'active_project' => $this->getId(),
-      ));
+    function getEditUrl($redirect_to = null) {
+      $attributes = array('id' => $this->getId(),
+        'active_project' => $this->getId());
+      if (trim($redirect_to) <> '') {
+        $attributes['redirect_to'] = urlencode(trim($redirect_to));
+      } // if
+      
+      return get_url('project', 'edit', $attributes);
     } // getEditUrl
     
     /**
@@ -1230,6 +1709,40 @@
     } // getOpenUrl
     
     /**
+    * Return add contact to project URL
+    *
+    * @access public
+    * @param void
+    * @return string
+    */
+    function getAddContactUrl($params = null) {
+      $params['active_project'] = $this->getId();
+      return get_url('project', 'add_contact', $params);
+    } // getAddContactUrl
+    
+    /**
+    * Return remove contact to project URL
+    *
+    * @access public
+    * @param integer $contact_id
+    * @return string
+    */
+    function getRemoveContactUrl($contact_id) {
+      return get_url('project', 'remove_contact', array('rel_object_manager' => 'Contacts', 'rel_object_id' => $contact_id, 'project_id' => $this->getId()));
+    } // getRemoveContactUrl
+    
+    /**
+    * Return edit contact to project URL
+    *
+    * @access public
+    * @param integer $contact_id
+    * @return string
+    */
+    function getEditContactUrl($contact_id) {
+      return get_url('project', 'edit_contact', array('rel_object_manager' => 'Contacts', 'rel_object_id' => $contact_id, 'project_id' => $this->getId()));
+    } // getEditContactUrl
+    
+    /**
     * Return remove user from project URL
     *
     * @access public
@@ -1259,8 +1772,138 @@
     * @return string
     */
     function getTagUrl($tag_name) {
-      return get_url('tag', 'project_tag', array('tag' => $tag_name, 'active_project' => $this->getId()));
+      return get_url('tags', 'project_tag', array('tag' => $tag_name, 'active_project' => $this->getId()));
     } // getTagUrl
+
+    /**
+    * Return time report URL
+    *
+    * @access public
+    * @param string $tag_name
+    * @return string
+    */
+    function getTimeReportUrl() {
+      return get_url('time', 'bytask', array('active_project' => $this->getId()));
+    } // getTimeReportUrl
+
+    /**
+    * Return update logo URL
+    *
+    * @access public
+    * @param void
+    * @return string
+    */
+    function getEditLogoUrl() {
+      return get_url('project', 'edit_logo', $this->getId());
+    } // getEditLogoUrl
+    
+    /**
+    * Return delete logo URL
+    *
+    * @access public
+    * @param void
+    * @return string
+    */
+    function getDeleteLogoUrl() {
+      return get_url('project', 'delete_logo', $this->getId());
+    } // getDeleteLogoUrl
+
+    // ---------------------------------------------------
+    //  Logo
+    // ---------------------------------------------------
+    
+    /**
+    * Set logo value
+    *
+    * @param string $source Source file
+    * @param integer $max_width
+    * @param integer $max_height
+    * @param boolean $save Save object when done
+    * @return null
+    */
+    function setLogo($source, $max_width = 50, $max_height = 50, $save = true) {
+      if (!is_readable($source)) {
+        return false;
+      }
+      
+      do {
+        $temp_file = ROOT . '/cache/' . sha1(uniqid(rand(), true));
+      } while (is_file($temp_file));
+      
+      try {
+        Env::useLibrary('simplegd');
+        
+        $image = new SimpleGdImage($source);
+        $thumb = $image->scale($max_width, $max_height, SimpleGdImage::BOUNDARY_DECREASE_ONLY, false);
+        $thumb->saveAs($temp_file, IMAGETYPE_PNG);
+        
+        $public_filename = PublicFiles::addFile($temp_file, 'png');
+        if ($public_filename) {
+          $this->setLogoFile($public_filename);
+          if ($save) {
+            $this->save();
+          } // if
+        } // if
+        
+        $result = true;
+      } catch(Exception $e) {
+        $result = false;
+      } // try
+      
+      // Cleanup
+      if (!$result && $public_filename) {
+        PublicFiles::deleteFile($public_filename);
+      } // if
+      @unlink($temp_file);
+      
+      return $result;
+    } // setLogo
+    
+    /**
+    * Delete logo
+    *
+    * @param void
+    * @return null
+    */
+    function deleteLogo() {
+      if ($this->hasLogo()) {
+        PublicFiles::deleteFile($this->getLogoFile());
+        $this->setLogoFile('');
+      } // if
+    } // deleteLogo
+    
+    /**
+    * Returns path of company logo. This function will not check if file really exists
+    *
+    * @access public
+    * @param void
+    * @return string
+    */
+    function getLogoPath() {
+      return PublicFiles::getFilePath($this->getLogoFile());
+    } // getLogoPath
+    
+    /**
+    * description
+    *
+    * @access public
+    * @param void
+    * @return string
+    */
+    function getLogoUrl() {
+      return $this->hasLogo() ? PublicFiles::getFileUrl($this->getLogoFile()) : get_image_url('logo.gif');
+    } // getLogoUrl
+    
+    /**
+    * Returns true if this company have logo file value and logo file exists
+    *
+    * @access public
+    * @param void
+    * @return boolean
+    */
+    function hasLogo() {
+      return trim($this->getLogoFile()) && is_file($this->getLogoPath());
+    } // hasLogo
     
     // ---------------------------------------------------
     //  System functions
@@ -1289,8 +1932,10 @@
     * @return boolean
     */
     function delete() {
+      $this->clearPageAttachments();
       $this->clearMessages();
       $this->clearTaskLists();
+      $this->clearTickets();
       $this->clearMilestones();
       $this->clearFiles();
       $this->clearFolders();
@@ -1301,12 +1946,28 @@
     } // delete
     
     /**
+    * Clear all project page attachments
+    *
+    * @param void
+    * @return null
+    */
+    private function clearPageAttachments() {
+      $page_attachments = $this->getAllPageAttachments();
+      if (is_array($page_attachments)) {
+        foreach ($page_attachments as $page_attachment) {
+          $page_attachment->delete();
+        } // foreach
+      } // if
+    } // clearPageAttachments
+ 
+    /**
     * Clear all project messages
     *
     * @param void
     * @return null
     */
     private function clearMessages() {
+      trace(__FILE__,'clearMessages');
       $messages = $this->getAllMessages();
       if (is_array($messages)) {
         foreach ($messages as $message) {
@@ -1322,6 +1983,7 @@
     * @return null
     */
     private function clearTaskLists() {
+      trace(__FILE__,'clearTaskLists');
       $task_lists = $this->getAllTaskLists();
       if (is_array($task_lists)) {
         foreach ($task_lists as $task_list) {
@@ -1329,7 +1991,22 @@
         } // foreach
       } // if
     } // clearTaskLists
-    
+
+    /**
+    * Clear all tickets
+    *
+    * @param void
+    * @return null
+    */
+    private function clearTickets() {
+      $tickets = $this->getAllTickets();
+      if (is_array($tickets)) {
+        foreach ($tickets as $ticket) {
+          $ticket->delete();
+        } // foreach
+      } // if
+    } // clearTickets
+        
     /**
     * Clear all milestones
     *
@@ -1337,6 +2014,7 @@
     * @return null
     */
     private function clearMilestones() {
+      trace(__FILE__,'clearMilestones');
       $milestones = $this->getAllMilestones();
       if (is_array($milestones)) {
         foreach ($milestones as $milestone) {
@@ -1352,6 +2030,8 @@
     * @return null
     */
     private function clearForms() {
+      trace(__FILE__,'clearForms');
+      if(!plugin_active('form')) { return null; }
       $forms = $this->getAllForms();
       if (is_array($forms)) {
         foreach ($forms as $form) {
@@ -1367,6 +2047,7 @@
     * @return null
     */
     private function clearFiles() {
+      if(!plugin_active('files')) { return null; }
       $files = ProjectFiles::getAllFilesByProject($this);
       if (is_array($files)) {
         foreach ($files as $file) {
@@ -1382,6 +2063,7 @@
     * @return null
     */
     private function clearFolders() {
+      if(!plugin_active('files')) { return null; }
       $folders = $this->getFolders();
       if (is_array($folders)) {
         foreach ($folders as $folder) {

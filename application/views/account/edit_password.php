@@ -22,43 +22,24 @@
       ));
     } // if
   } // if
-  
-  if ($user->canUpdateProfile(logged_user())) {
-    add_page_action(array(
-      lang('update profile')  => $user->getEditProfileUrl(),
-      lang('change password') => $user->getEditPasswordUrl(),
-      lang('update avatar')   => $user->getUpdateAvatarUrl()
-    ));
-  } // if
-  
-  if ($user->canUpdatePermissions(logged_user())) {
-    add_page_action(array(
-      lang('permissions')  => $user->getUpdatePermissionsUrl()
-    ));
-  } // if
-
 ?>
+<div class="icon"><img src="<?php echo $user->getContact()->getAvatarUrl() ?>" alt="<?php echo clean($user->getDisplayName()) ?> <?php echo lang('avatar') ?>" /></div>
+<span class="name"><?php echo lang('user') . ': ' ?><a href="<?php echo $user->getCardUrl() ?>"><?php echo clean($user->getDisplayName()) ?></a></span><?php ?><div class="clear"></div>
 <form action="<?php echo $user->getEditPasswordUrl($redirect_to) ?>" method="post">
-
-  <?php tpl_display(get_template_path('form_errors')) ?>
-  
+<?php tpl_display(get_template_path('form_errors')) ?>
 <?php if (!logged_user()->isAdministrator()) { ?>
   <div>
     <?php echo label_tag(lang('old password'), 'passwordFormOldPassword', true) ?>
     <?php echo password_field('password[old_password]') ?>
   </div>
 <?php } // if ?>
-  
   <div>
-    <?php echo label_tag(lang('password'), 'passwordFormOldPassword', true) ?>
+    <?php echo label_tag(lang('password'), 'passwordFormNewPassword', true) ?>
     <?php echo password_field('password[new_password]') ?>
   </div>
-  
   <div>
-    <?php echo label_tag(lang('password again'), 'passwordFormOldPassword', true) ?>
+    <?php echo label_tag(lang('password again'), 'passwordFormNewPasswordAgain', true) ?>
     <?php echo password_field('password[new_password_again]') ?>
   </div>
-  
   <?php echo submit_button(lang('change password')) ?>
-  
 </form>

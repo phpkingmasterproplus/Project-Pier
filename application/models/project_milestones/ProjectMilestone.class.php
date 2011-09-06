@@ -30,6 +30,13 @@
     protected $searchable_columns = array('name', 'description');
     
     /**
+    * Milestones are commentable
+    *
+    * @var boolean
+    */
+    protected $is_commentable = true;
+
+    /**
     * Cached User object of person who completed this milestone
     *
     * @var User
@@ -133,7 +140,7 @@
     private function getDueDateDiff(DateTimeValue $diff_to) {
       return $this->getDueDate()->getTimestamp() - $diff_to->getTimestamp();
     } // getDueDateDiff
-    
+
     // ---------------------------------------------------
     //  Related object
     // ---------------------------------------------------
@@ -200,6 +207,33 @@
     } // hasMessages
     
     /**
+    * Return all tickets related to this message
+    *
+    * @access public
+    * @param void
+    * @return array
+    */
+    function getTickets() {
+      if (!plugin_active('tickets')) return array();
+      return ProjectTickets::findAll(array(
+        'conditions' => '`milestone_id` = ' . DB::escape($this->getId()),
+        'order' => 'created_on'
+      )); // findAll
+    } // getTickets
+    
+    /**
+    * Returns true if there are tickets in this milestone
+    *
+    * @access public
+    * @param void
+    * @return boolean
+    */
+    function hasTickets() {
+      if (!plugin_active('tickets')) return false;
+      return (boolean) ProjectTickets::count('`milestone_id` = ' . DB::escape($this->getId()));
+    } // hasTickets
+    
+    /**
     * Return assigned to object. It can be User, Company or nobady (NULL)
     *
     * @access public
@@ -263,7 +297,7 @@
     * @return boolean
     */
     function canManage(User $user) {
-      return $user->getProjectPermission($this->getProject(), ProjectUsers::CAN_MANAGE_MILESTONES);
+      return $user->getProjectPermission($this->getProject(), PermissionManager::CAN_MANAGE_MILESTONES);
     } // canManage
     
     /**
@@ -294,13 +328,13 @@
     * @return boolean
     */
     function canAdd(User $user, Project $project) {
-      if (!$user->isProjectUser($project)) {
-        return false;
+      if ($user->getProjectPermission($project, PermissionManager::CAN_MANAGE_MILESTONES)) {
+        return true;
       }
       if ($user->isAdministrator()) {
         return true;
       }
-      return $user->getProjectPermission($project, ProjectUsers::CAN_MANAGE_MILESTONES);
+      return false;
     } // canAdd
     
     /**
@@ -311,30 +345,35 @@
     * @return boolean
     */
     function canEdit(User $user) {
-      if (!$user->isProjectUser($this->getProject())) {
-        return false;
-      }
-      if ($user->isAdministrator()) {
+      if ($user->getProjectPermission($this->getProject(), PermissionManager::CAN_MANAGE_MILESTONES)) {
         return true;
       }
       if ($this->getCreatedById() == $user->getId()) {
+        return true;
+      }
+      if ($user->isAdministrator()) {
         return true;
       }
       return false;
     } // canEdit
     
     /**
-    * Can chagne status of this milestone (completed / open)
+    * Can change status of this milestone (completed / open)
     *
     * @access public
     * @param User $user
     * @return boolean
     */
     function canChangeStatus(User $user) {
-      if ($this->canEdit($user)) {
+      if ($user->getProjectPermission($this->getProject(), PermissionManager::CAN_CHANGE_STATUS_MILESTONES)) {
         return true;
       }
-      
+      if ($this->getCreatedById() == $user->getId()) {
+        return true;
+      }
+      if ($user->isAdministrator()) {
+        return true;
+      }   
       // Additional check - is this milestone assigned to this user or its company
       if ($this->getAssignedTo() instanceof User) {
         if ($user->getId() == $this->getAssignedTo()->getObjectId()) {
@@ -356,13 +395,7 @@
     * @return boolean
     */
     function canDelete(User $user) {
-      if (!$user->isProjectUser($this->getProject())) {
-        return false;
-      }
-      if ($user->isAdministrator()) {
-        return true;
-      }
-      return false;
+      return $this->canEdit($user);
     } // canDelete
     
     // ---------------------------------------------------
@@ -438,7 +471,18 @@
     function getAddTaskListUrl() {
       return get_url('task', 'add_list', array('milestone_id' => $this->getId(), 'active_project' => $this->getProjectId()));
     } // getAddTaskListUrl
-    
+        
+    /**
+    * Return add ticket URL
+    *
+    * @access public
+    * @param void
+    * @return string
+    */
+    function getAddTicketUrl() {
+      return get_url('ticket', 'add', array('milestone_id' => $this->getId(), 'active_project' => $this->getProjectId()));
+    } // getAddTicketUrl
+ 
     // ---------------------------------------------------
     //  System functions
     // ---------------------------------------------------
@@ -502,6 +546,52 @@
     function getObjectUrl() {
       return $this->getViewUrl();
     } // getObjectUrl
+
+    /**
+    * Returns a count of tickets in this milestone by state
+    *
+    * @access public
+    * @param void
+    * @return string
+    */
+    function hasTicketsByState($state) {
+      if (!plugin_active('tickets')) return 0;
+      if ($state == 'open') {
+        $new = ProjectTickets::count('`milestone_id` = ' . DB::escape($this->getId()) . ' AND `state` = ' . DB::escape('new') . '');
+        $open = ProjectTickets::count('`milestone_id` = ' . DB::escape($this->getId()) . ' AND `state` = ' . DB::escape('open') . '');
+        return $new + $open;
+      }
+      else if ($state == 'in_progress') {
+        return ProjectTickets::count('`milestone_id` = ' . DB::escape($this->getId()) . ' AND `state` = ' . DB::escape('pending') . '');
+      }
+      else if ($state == 'resolved') {
+        return ProjectTickets::count('`milestone_id` = ' . DB::escape($this->getId()) . ' AND `state` = ' . DB::escape('closed') . '');
+      }
+      
+    } // hasTicketsByState
+
+    /**
+    * Returns a total count of all tickets.
+    *
+    * @access public
+    * @param void
+    * @return string
+    */
+    function getTotalTicketCount() {
+      if (!plugin_active('tickets')) return 0;
+      return ProjectTickets::count('`milestone_id` = ' . DB::escape($this->getId()));
+    } // getTotalTicketCount
+
+    /**
+    * Returns a percentage value of a certain ticket status.
+    *
+    * @access public
+    * @param void
+    * @return string
+    */
+    function getPercentageByTicketState($state) {
+      return floor(($this->hasTicketsByState($state) / $this->getTotalTicketCount()) * 100);
+    } // getPercentageByTicketState
     
   } // ProjectMilestone 
 

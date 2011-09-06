@@ -1,53 +1,53 @@
-           		
-~~~~~~~~~~~~~~~~~~~~~
-Upgrading ProjectPier
-~~~~~~~~~~~~~~~~~~~~~
+            		
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Upgrading to ProjectPier 0.8.8
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-General Notice: We are not changing the built-in upgrade checker in ProjectPier for pre-release
-versions of 0.8.  0.8.0-dev and 0.8.0-RC1 and 0.8.0 (the final release) will all be
-considered 0.8 as far as the upgrade checking utility is concerned.  That means that if you
-have installed a pre-release version -dev or -RC1, you will not receive upgrade notification 
-within ProjectPier.
+ProjectPier 0.8.8 is NOT database compatible with previous versions.
 
-All versions of ProjectPier 0.8 are database compatible with each other and with activeCollab 0.7.1.
+Upgrade instructions 
 
-There is not an upgrade script for ProjectPier 0.8.  A set of instructions is provided below, but use
-them at your own risk.  Make sure you have backed up all your data (files and database) so that you
-can return to your previous version if necessary.  
+ 1) Enable all plugins (you will want to note down which plugins you were not using to disable them later).
+ 2) Unzip the ProjectPier v0.8.8 package to your hard drive. Be sure you are able to locate the pp088 folder you just unzipped.
+ 3) Make a backup of your 0.8.6 database before you begin making any changes.
+ 4) Append 086 to the 0.8.6 core folders mentioned in appendix A. This will make sure we can restore if necessary.
+ 5) Copy the files in the 0.8.6 root to a new folder named root086.
+ 6) Upload the 0.8.8 core folders mentioned in appendix A to your 0.8.6 root on your web server.
+ 7) Upload the files in the 0.8.8 root to the 0.8.6 root on your web server.
+ 8) Run the upgrade script from the browser http://YOUR-PP-WEBSITE.COM/public/patch/patch.php?id=086-088. Replace "YOUR-PP-WEBSITE.COM" with your own domain name. 
+ 9) Monitor the output of the upgrade script
 
-When upgrading, do NOT run the installation scripts!
+ In case the upgrade script stops with a FAIL message:
+ a) from the top remove all the lines including the line that gave a FAIL message from /public/patch/086-088.sql
+ b) rerun the script from the browser
 
-1) Backup your database
+ In case the browser shows a white page:
+ a) from the top remove all the lines including the line that gave a white page
+ b) rerun the script from the browser
 
-2) Backup your installation files (you will need your existing /config/config.php to complete this 
-   installation).
+ Note: Some commands may take longer to complete than the browser is willing to wait (time out).
+ The command is still executed but we need to rerun the script without the commands that executed already.
 
-3) Unzip the ProjectPier package to a new directory on your hard drive, then upload to your server, 
-   overwriting the existing activeCollab or ProjectPier installation files.
+10) Create a new directory named tmp in the 0.8.6 root (this will hold all the uploaded files and sessions)
+11) Copy /public086/files to /public/files (overwrite all)
+12) Login. All should work fine now. Force a browser reload to reload all stylesheets.
+13) Disable all plugins you are not using.
+14) Periodically clean tmp from all files older than 1 day 
 
-5) Add the following lines to /config/config.php that you backed up in step 2 (NOT the one you just
-   unzipped, the one you backed up from your existing installation!!)
-   define('SHOW_MESSAGE_BODY', true); 
-   define('SHOW_COMMENT_BODY', true); 
-   define('SHOW_MILESTONE_BODY', true); 
-   define('TOKEN_COOKIE_NAME', '93c65403ce6b695a583e9e4c8c5b25e687283ee8');
+Fallback instructions
 
-   SHOW_MESSAGE_BODY = Set this to true or false, it determines whether to include message text in new 
-                       message notification emails.
+ 1) Delete the directories mentioned in appendix A
+ 2) Remove 086 from the name of the directories mentioned in appendix A
+ 3) Copy the files from root086 to the root of 0.8.6
+ 4) Restore your database
 
-   SHOW_COMMENT_BODY = Set this to true or false, it determines whether to include comment text in new 
-                       comment notification emails.
 
-   SHOW_MILESTONE_BODY = Set this to true or false, it determines whether to include milestone text in new
-                         milestone notification emails.
+Appendix A. Upgrade directories 
 
-   TOKEN_COOKIE_NAME = set this to any unique string of characters, the exact length is not important.  This
-                       is required, but only used to differentiate between installations when there are
-                       multiple installations on the same server.
-   
-   Change from: define('PRODUCT_VERSION', '0.7.1');
-            to: define('PRODUCT_VERSION', '0.8.0');
+ application	
+ environment	 
+ language	 
+ library	 
+ public	 
+ tools
 
-6) Upload /config/config.php that you just edited to your server, overwriting the existing file.
-
-7) You should be ready to go now.

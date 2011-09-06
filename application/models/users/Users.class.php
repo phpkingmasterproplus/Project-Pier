@@ -1,8 +1,7 @@
 <?php
 
   /**
-  * Users, generated on Sat, 25 Feb 2006 17:37:12 +0100 by 
-  * DataObject generation tool
+  * Users
   *
   * @http://www.projectpier.org/
   */
@@ -15,7 +14,9 @@
     * @return array
     */
     function getAll() {
-      return self::findAll();
+      return self::findAll(array(
+        'order' => '`username` ASC'
+      ));
     } // getAll
     
     /**

@@ -1,4 +1,4 @@
-<h1 class="pageTitle"><span>Step <?php echo $current_step->getStepNumber() ?>:</span> Environment checks</h1>
+<h1 class="pageTitle"><span>Step <?php echo $current_step->getStepNumber() ?>:</span> Server check</h1>
 <?php $checklist = $installer->getCheckList() ?>
 <?php if (is_array($checklist) && count($checklist)) { ?>
 <ul>
@@ -6,7 +6,7 @@
 <?php if ($checklist_item->getChecked()) { ?>
   <li class="success">OK: <?php echo clean($checklist_item->getMessage()) ?></li>
 <?php } else { ?>
-  <li class="error">Error: <?php echo clean($checklist_item->getMessage()) ?></li>
+  <li class="error"><?php echo clean($checklist_item->getMessage()) ?></li>
 <?php } // if ?>
 <?php } // foreach ?>
 </ul>

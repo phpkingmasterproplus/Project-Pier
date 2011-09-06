@@ -39,7 +39,13 @@
         $this->redirectToReferer(ROOT_URL);
       } // if
       
+      $contacts = $company->getContacts();
+      $active_projects = $company->getActiveProjects();
+      
       tpl_assign('company', $company);
+      tpl_assign('contacts', $contacts);
+      tpl_assign('active_projects', $active_projects);
+      $this->setSidebar(get_template_path('company_card_sidebar', 'company'));
     } // card
     
     /**
@@ -49,6 +55,7 @@
     * @return null
     */
     function view_client() {
+      $this->addHelper('textile');
       $this->setTemplate('view_company');
       
       if (!logged_user()->isAdministrator(owner_company())) {
@@ -145,10 +152,13 @@
       
       $company = new Company();
       $company_data = array_var($_POST, 'company');
+      if ($company->isNew()) {
+        $company_data['timezone'] = owner_company()->getTimezone();
+      } // if
       tpl_assign('company', $company);
       tpl_assign('company_data', $company_data);
       
-      if (is_array($company_data)) {
+      if (array_var($_POST, 'company')) {
         $company->setFromAttributes($company_data);
         $company->setClientOfId(owner_company()->getId());
         
@@ -378,6 +388,11 @@
         flash_error(lang('company dnx'));
         $this->redirectToReferer(get_url('administration', 'clients'));
       } // if
+
+      if (!function_exists('imagecreatefromjpeg')) {
+        flash_error(lang('no image functions'));
+        $this->redirectTo('dashboard');
+      } // if
       
       tpl_assign('company', $company);
       
@@ -481,6 +496,43 @@
       
       $this->redirectTo('dashboard');
     } // hide_welcome_info
+
+    /**
+    * Toggle favorite status
+    *
+    * @param void
+    * @return null
+    */
+    function toggle_favorite() {
+      if (!logged_user()->isAdministrator()) {
+        flash_error('no access permisssions');
+        $this->redirectToReferer(get_url('dashboard'));
+      }
+
+      $company = Companies::findById(get_id());
+      if (!($company instanceof Company)) {
+        flash_error(lang('company dnx'));
+        $this->redirectToReferer(get_url('administration'));
+      } // if
+      
+      if ($company->isOwner()) {
+        flash_error('no access permissions');
+        $this->redirectToReferer(get_url('dashboard'));
+      } // if
+      
+      $company->setIsFavorite(!$company->isFavorite());
+
+      if (!$company->save()) {
+        flash_error(lang('could not save info'));
+      }
+      
+      $redirect_to = urldecode(array_var($_GET, 'redirect_to'));
+      if ((trim($redirect_to)) == '' || !is_valid_url($redirect_to)) {
+        $redirect_to = $company->getViewUrl();
+      } // if
+      
+      $this->redirectToUrl($redirect_to);
+    } // toggle_favorite
   
   } // CompanyController
 

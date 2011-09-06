@@ -1,14 +1,14 @@
 <?php
 
   set_page_title(lang('delete milestone'));
-  project_tabbed_navigation(PROJECT_TAB_MILESTONES);
+  project_tabbed_navigation('milestones');
   project_crumbs(lang('delete milestone'));
 
 ?>
 <form action="<?php echo $milestone->getDeleteUrl() ?>" method="post">
   <?php tpl_display(get_template_path('form_errors')) ?>
 
-  <div><?php echo lang('about to delete') ?> <?php echo strtolower(lang('milestone')) ?> <b><?php echo clean($milestone->getName()) ?></b></div>
+  <div><?php echo lang('about to delete') ?> <?php echo lc(lang('milestone')) ?> <b><?php echo clean($milestone->getName()) ?></b></div>
     
   <div>
     <label><?php echo lang('confirm delete milestone') ?></label>

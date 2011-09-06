@@ -1,8 +1,11 @@
 <?php 
 
   set_page_title($milestone->isNew() ? lang('add milestone') : lang('edit milestone'));
-  project_tabbed_navigation(PROJECT_TAB_MILESTONES);
-  project_crumbs(lang('add milestone'));
+  project_tabbed_navigation('milestones');
+  project_crumbs(array(
+    array(lang('milestones'), get_url('milestone')),
+    array($milestone->isNew() ? lang('add milestone') : lang('edit milestone'))
+  ));
   
 ?>
 <?php if ($milestone->isNew()) { ?>
@@ -27,6 +30,13 @@
     <?php echo label_tag(lang('due date'), null, true) ?>
     <?php echo pick_date_widget('milestone_due_date', array_var($milestone_data, 'due_date')) ?>
   </div>
+
+<?php if (logged_user()->getProjectPermission($milestone->getProject(), 'milestones-edit_goal')) { ?>
+  <div>
+    <?php echo label_tag(lang('goal'), 'milestoneFormGoal') ?>
+    <?php echo input_field('milestone[goal]', array_var($milestone_data, 'goal'), array('class' => 'short', 'id' => 'milestoneFormGoal')) ?>
+  </div>
+<?php } // if ?>
   
 <?php if (logged_user()->isMemberOfOwnerCompany()) { ?>
   <div class="formBlock">
@@ -42,11 +52,13 @@
     </div>
     <div><?php echo checkbox_field('milestone[send_notification]', array_var($milestone_data, 'send_notification', true), array('id' => 'milestoneFormSendNotification')) ?> <label for="milestoneFormSendNotification" class="checkbox"><?php echo lang('send milestone assigned to notification') ?></label></div>
   </div>
-  
+
+<?php if (plugin_active('tags')) { ?>
   <div class="formBlock">
     <?php echo label_tag(lang('tags'), 'milestoneFormTags') ?>
     <?php echo project_object_tags_widget('milestone[tags]', active_project(), array_var($milestone_data, 'tags'), array('id' => 'milestoneFormTags', 'class' => 'long')) ?>
   </div>
-  
+<?php } // if ?>
+
   <?php echo submit_button($milestone->isNew() ? lang('add milestone') : lang('edit milestone')) ?>
 </form>

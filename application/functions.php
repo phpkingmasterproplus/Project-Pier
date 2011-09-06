@@ -31,7 +31,7 @@
     try {
       $loader->loadClass($class_name);
     } catch(Exception $e) {
-      die('Caught Exception in AutoLoader: ' . $e->__toString());
+      die('Exception in AutoLoader: ' . $e->__toString());
     } // try
   } // __autoload
   
@@ -46,6 +46,11 @@
     if (($logger_session instanceof Logger_Session) && !$logger_session->isEmpty()) {
       Logger::saveSession();
     } // if
+    $last_error = error_get_last();
+    if($last_error['type'] === E_ERROR || $last_error['type'] === E_PARSE) {
+      include 'error.php';
+    }
+    if (ob_get_length()) ob_end_flush();
   } // __shutdown
   
   /**
@@ -58,8 +63,12 @@
   * @return null
   */
   function __production_error_handler($code, $message, $file, $line) {
-    // Skip non-static method called staticly type of error...
-    if ($code == 2048) {
+    // Skip non-static method called statically type of error...
+    // 2048 = E_SRICT, but we don't use the constant as it may not be defined in the
+    // current version of PHP.
+    // We also skip errors that have been suppressed using @ (which sets
+    // error_reporting() to zero).
+    if ($code == 2048 || error_reporting() == 0) {
       return;
     } // if
     
@@ -93,7 +102,8 @@
   * @param boolean $include_project_id
   * @return string
   */
-  function get_url($controller_name = null, $action_name = null, $params = null, $anchor = null, $include_project_id = true) {
+  function get_url($controller_name = null, $action_name = null, $params = null, $anchor = null, $include_project_id = true, $separator = '&amp;') {
+    //trace(__FILE__,"get_url($controller_name, $action_name, params?, $anchor, $include_project_id, $separator)");
     $controller = trim($controller_name) ? $controller_name : DEFAULT_CONTROLLER;
     $action = trim($action_name) ? $action_name : DEFAULT_ACTION;
     if (!is_array($params) && !is_null($params)) {
@@ -110,6 +120,12 @@
       } // if
     } // if
     
+    // defeat caches
+    $url_params[]=time();
+    if (isset($_REQUEST['trace'])) {
+      $url_params[]='trace';
+    }
+
     if (is_array($params)) {
       foreach ($params as $param_name => $param_value) {
         if (is_bool($param_value)) {
@@ -124,7 +140,7 @@
       $anchor = '#' . $anchor;
     } // if
     
-    return with_slash(ROOT_URL) . 'index.php?' . implode('&amp;', $url_params) . $anchor;
+    return with_slash(ROOT_URL) . 'index.php?' . implode($separator, $url_params) . $anchor;
   } // get_url
   
   // ---------------------------------------------------
@@ -149,7 +165,7 @@
   */
   function product_version() {
     // 0.6 is the last version that comes without PRODUCT_VERSION constant that is set up
-    return defined('PRODUCT_VERSION') ? PRODUCT_VERSION : '0.8.0.2';
+    return defined('PRODUCT_VERSION') ? PRODUCT_VERSION : '0.8.0';
   } // product_version
   
   /**
@@ -181,7 +197,7 @@
   // ---------------------------------------------------
   
   /**
-  * Return matched requst controller
+  * Return matched request controller
   *
   * @access public
   * @param void
@@ -224,11 +240,17 @@
       foreach ($_GET as $k => $v) {
         $ref_params['ref_' . $k] = $v;
       }
+      trace(__FILE__, 'prepare_company_website_controller(): not logged in, redirect');
       $controller->redirectTo('access', 'login', $ref_params);
     } // if
     
     $controller->setLayout($layout);
-    $controller->addHelper('form', 'breadcrumbs', 'pageactions', 'tabbednavigation', 'company_website', 'project_website');
+    $controller->addHelper('breadcrumbs');
+    $controller->addHelper('pageactions');
+    $controller->addHelper('viewoptions');
+    $controller->addHelper('tabbednavigation');
+    $controller->addHelper('company_website');
+    $controller->addHelper('project_website');
   } // prepare_company_website_controller
   
   // ---------------------------------------------------
@@ -309,6 +331,7 @@
   * @return ApplicationDataObject
   */
   function get_object_by_manager_and_id($object_id, $manager_class) {
+    trace(__FILE__, "get_object_by_manager_and_id($object_id, $manager_class)");
     $object_id = (integer) $object_id;
     $manager_class = trim($manager_class);
     
@@ -317,9 +340,71 @@
     } // if
     
     $code = "return $manager_class::findById($object_id);";
-    $object = eval($code);
+    try { 
+      $object = eval($code);
+    } catch (Exception $e) {
+      $object = null;
+    }
     
     return $object instanceof DataObject ? $object : null;
   } // get_object_by_manager_and_id
 
+  /**
+  * This function will return duration in secs in weeks, days, hours, minutes and seconds
+  *
+  * @param integer $secs
+  * @return string
+  */
+
+  function duration($secs)
+  {
+    $vals = array(
+      'weeks' => (int) ($secs / 86400 / 7),
+      'days' => $secs / 86400 % 7,
+      'hours' => $secs / 3600 % 24,
+      'minutes' => $secs / 60 % 60,
+      'seconds' => $secs % 60
+    );
+
+    $ret = array();
+    $added = false;
+
+    foreach ($vals as $k => $v) {
+      if ($v > 0 || $added) {
+        $added = false;  // true
+        $ret[] = $v .' '. lang($k);
+      }
+    }
+    return join(' ', $ret);
+  }
+ 
+  function make_json_for_ajax_return($result,$messageboard = null,$data = array(),$actionjs = null){
+  	/*
+  	 * result : result function PHP boolean permit to add icon src link icon ok or icon ko to message message board
+  	 * messageboard : message to display in the IHM ajax board (option)
+  	 * data : data to return to browser
+  	 * actionjs : javascript code which can be executed on browser
+  	 * 
+  	 * Return array => [['result'],['messageajaxboard'],['data'],['actionjs']] 
+  	 */
+  	$myarr = array();
+  	$myarr= array(); //init
+  	$myarr['result'] = $result;
+	//image
+  	$img = "ok.gif";
+  	if (!$result) $img = "cancel_gray.gif";
+  	$myarr['messageboard'] = '<img src="' . get_image_url("icons/$img") . '">' . $messageboard;
+  	$myarr['data'] = $data;
+  	$myarr['actionjs'] = $actionjs;
+	/*
+	 * The first two headers prevent the browser 
+	 * from caching the response (a problem with IE and GET requests) 
+	 * and the third sets the correct MIME type for JSON.
+	 */
+	header('Cache-Control: no-cache, must-revalidate');
+	header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
+	header('Content-Type: text/html; charset: UTF-8');
+  	
+  	return json_encode($myarr);  	
+  }
 ?>
