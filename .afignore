@@ -1,0 +1,7 @@
+.gitignore
+
+# tmp/
+# cache/
+# upload/
+public/install/
+public/upgrade/
