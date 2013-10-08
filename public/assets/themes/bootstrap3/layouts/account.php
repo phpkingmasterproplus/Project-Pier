@@ -1,64 +1,56 @@
-<?php $owner_company_name = clean(owner_company()->getName()); ?>
-<?php $site_name = config_option('site_name', $owner_company_name); ?>
-<!DOCTYPE html>
-<html>
-<head>
-  <title><?php echo get_page_title(); ?> | <?php echo $site_name; ?></title>
-
-  <?php echo meta_tag('content-type', 'text/html; charset=utf-8', true); ?>
-  <?php echo render_page_meta(); ?>
-
-  <?php echo link_tag(ROOT_URL.'favicon.ico', 'rel', 'shortcut icon', array("type"=>"image/x-icon")); ?>
-  <?php echo link_tag(ROOT_URL.'favicon.ico', 'rel', 'icon', array("type"=>"image/x-icon")); ?>
-  <?php echo link_tag(logged_user()->getRecentActivitiesFeedUrl(), 'rel', 'alternate', array("type"=>"application/rss+xml", "title"=>lang('recent activities feed'))); ?>
-  <?php echo render_page_links(); ?>
-
-  <?php echo stylesheet_tag('project_website.css'); ?>
-  <?php echo stylesheet_tag('colorbox/colorbox.css'); ?>
-  <?php echo render_page_inline_css(); ?>
-
-  <?php echo javascript_tag('jquery.min.js'); ?>
-  <?php echo javascript_tag('bootstrapp.min.js'); ?>
-  <?php include('inlinejs.php'); ?>
-  <?php echo render_page_javascript(); ?>
-  <?php echo render_page_inline_js(); ?>
-</head>
-<body>
-    <script src="../javascript/jquery-1.9.1.js"></script>
-    <script src="../javascript/bootstrap.min.js"></script>
-<?php echo render_system_notices(logged_user()); ?>
+<?php $owner_company_name = clean(owner_company()->getName()) ?>
+<?php $site_name = config_option('site_name', $owner_company_name) ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title><?php echo get_page_title() ?> | <?php echo clean(owner_company()->getName()) ?></title>
+<?php echo stylesheet_tag('project_website.css') ?> 
+<?php echo stylesheet_tag('colorbox/colorbox.css') ?> 
+<?php echo meta_tag('content-type', 'text/html; charset=utf-8', true) ?> 
+<?php echo link_tag(ROOT_URL.'favicon.ico', 'rel', 'Shortcut Icon', array("type"=>"image/x-icon")) ?>
+<?php add_javascript_to_page('pp.js') ?>
+<?php add_javascript_to_page('jquery.min.js') ?>
+<?php add_javascript_to_page('jquery-ui.min.js') ?>
+<?php add_javascript_to_page('jquery.colorbox-min.js') ?>
+<?php add_javascript_to_page('jquery.imgareaselect.dev.js') ?>
+<?php add_javascript_to_page('jquery.jeditable.mini.js') ?>
+<?php add_javascript_to_page('jquery-ui-timepicker-addon.js') ?>
+<?php echo render_page_head() ?>
+  </head>
+  <body>
+<?php include('inlinejs.php') ?>
+<?php echo render_system_notices(logged_user()) ?>
     <div id="wrapper">
-
+    
       <!-- header -->
       <div id="headerWrapper">
         <div id="header">
           <h1><a href="<?php echo get_url('dashboard', 'index') ?>"><?php echo $site_name ?></a> | <a href="<?php echo get_url('account', 'index') ?>"><?php echo lang('my account') ?></a></h1>
+          <div id="userboxWrapper"><?php echo render_user_box(logged_user()) ?></div>
         </div>
       </div>
       <!-- /header -->
-    <div class="row-fluid">
-      <div class="span2"><div id="userboxWrapper"><?php echo render_user_box(logged_user()) ?></div></div>
-      <!-- content wrapper -->
-      <div class="span10"><div id="outerContentWrapper"></div>
-<div class="navbar"> <div class="navbar-inner"> <!-- tabs wrapper -->
+      
+      <div id="tabsWrapper">
+        <div id="tabs">
 <?php if (is_array(tabbed_navigation_items())) { ?>
-          <ul class="nav">
+          <ul>
 <?php foreach (tabbed_navigation_items() as $tabbed_navigation_item) { ?>
             <li id="tabbed_navigation_item_<?php echo $tabbed_navigation_item->getID() ?>" <?php if ($tabbed_navigation_item->getSelected()) { ?> class="active" <?php } ?>><a href="<?php echo $tabbed_navigation_item->getUrl() ?>"><?php echo clean($tabbed_navigation_item->getTitle()) ?></a></li>
 <?php } // foreach ?>
           </ul>
 <?php } // if ?>
         </div>
-      </div><!-- /tabs wrapper -->
-
-      <div id="crumbsWrapper" class="row">  <!-- crumbs wrapper -->
+      </div>
+      
+      <div id="crumbsWrapper">
         <div id="crumbsBlock">
           <div id="crumbs">
 <?php if (is_array(bread_crumbs())) { ?>
             <ul>
 <?php foreach (bread_crumbs() as $bread_crumb) { ?>
 <?php if ($bread_crumb->getUrl()) { ?>
-              <li><a href="<?php echo $bread_crumb->getUrl() ?>"><?php echo clean($bread_crumb->getTitle()) ?></a> &raquo;</li>
+              <li><a href="<?php echo $bread_crumb->getUrl() ?>"><?php echo clean($bread_crumb->getTitle()) ?></a></li>
 <?php } else {?>
               <li><span><?php echo clean($bread_crumb->getTitle()) ?></span></li>
 <?php } // if {?>
@@ -67,8 +59,25 @@
 <?php } // if ?>
           </div>
         </div>
-      </div> <!-- /crumbs wrapper -->
-
+      </div>
+      
+      <!-- content wrapper -->
+      <div id="outerContentWrapper">
+<?php if (is_array(page_actions())) { ?>
+        <div id="page_actionsWrapper">
+          <div id="page_actionsBlock">
+            <div id="page_actions">
+              <ul>
+<?php foreach (page_actions() as $page_action) { ?>
+                <li><a href="<?php echo $page_action->getURL() ?>"><?php echo clean($page_action->getTitle()) ?></a></li>
+<?php } // foreach ?>
+              </ul>
+            </div>
+          </div>
+        </div>
+<?php } else { // if ?>
+        <div style="height:1px"></div>
+<?php } // if ?>
         <div id="innerContentWrapper">
 <?php if (!is_null(flash_get('success'))) { ?>
           <div id="success"><?php echo clean(flash_get('success')) ?></div>
@@ -76,37 +85,21 @@
 <?php if (!is_null(flash_get('error'))) { ?>
           <div id="error"><?php echo clean(flash_get('error')) ?></div>
 <?php } ?>
-          <div id="pageHeader" class="row"><span id="pageTitle"><?php echo get_page_title() ?> - dashboard</span>
-                <?php if (is_array(page_actions())) { ?>
-                <div id="actionwrap" class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#"><i class="icon-chevron-down"></i></a>
-                  <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
-                      <?php foreach (page_actions() as $page_action) { ?>
-                      <li><a href="<?php echo $page_action->getURL() ?>"><?php echo clean($page_action->getTitle()) ?> - dashboard</a></li>
-                      <?php } // foreach ?>
-                  </ul>
-                </div>
-                <?php } else { // if ?>
-                <?php } // if ?>
-          </div>
+
+          <h1 id="pageTitle"><?php echo get_page_title() ?></h1>
           <div id="pageContent">
-<div class="row-fluid">
-  <div class="span10">
             <div id="content">
               <!-- Content -->
               <?php echo $content_for_layout ?>
               <!-- /Content -->
             </div>
-  </div>
-  <div class="span2">
 <?php if (isset($content_for_sidebar)) { ?>
             <div id="sidebar"><?php echo $content_for_sidebar ?></div>
 <?php } // if ?>
             <div class="clear"></div>
-  </div>
-</div>
           </div>
         </div>
-
+        
         <!--Footer -->
         <div id="footer">
           <div id="copy">
@@ -118,9 +111,9 @@
           </div>
           <div id="productSignature"><?php echo product_signature() ?><span id="request_duration"><?php printf(' in %.3f seconds', (microtime(true) - $GLOBALS['request_start_time']) ); ?></span> <span id="current_datetime"><?php echo date('c [W]'); ?></span></div>
         </div>
-      </div><!-- /content wrapper -->
-      </div><!-- /span10 -->
-   </div> <!-- /row_fluid -->
+      </div>
+      <!-- /content wrapper -->
+      
     </div>
   </body>
 </html>

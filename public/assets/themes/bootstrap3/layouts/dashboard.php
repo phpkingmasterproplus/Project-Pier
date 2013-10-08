@@ -14,8 +14,7 @@
   <?php echo link_tag(logged_user()->getRecentActivitiesFeedUrl(), 'rel', 'alternate', array("type"=>"application/rss+xml", "title"=>lang('recent activities feed'))); ?>
   <?php echo render_page_links(); ?>
 
-  <?php echo stylesheet_tag('project_website.css'); ?>
-  <?php echo stylesheet_tag('colorbox/colorbox.css'); ?>
+  <?php echo stylesheet_tag('style.css'); ?>
   <?php echo render_page_inline_css(); ?>
 
   <?php echo javascript_tag('jquery.min.js'); ?>
