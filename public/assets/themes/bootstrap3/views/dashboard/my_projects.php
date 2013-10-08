@@ -15,6 +15,16 @@
   add_page_action(lang('order by milestone'), get_url('dashboard', 'my_projects_by_milestone'));
 ?>
 
+<?php if (is_array(page_actions())) { ?>
+<div class="btn-toolbar">
+  <div class="btn-group">
+    <?php foreach (page_actions() as $page_action) { ?>
+      <a class="btn btn-default btn-sm" href="<?php echo $page_action->getURL() ?>"><?php echo clean($page_action->getTitle()) ?></a>
+    <?php } // foreach ?>
+  </div>
+</div>
+<?php } ?>
+
 <?php if (isset($active_projects) && is_array($active_projects) && count($active_projects)) { ?>
 <?php $show_icon = (config_option('files_show_icons', '1') == '1'); ?>
 
@@ -33,7 +43,6 @@
 
   <?php
     $this->assign('project', $project);
-    $this->includeTemplate(get_template_path('view_progressbar', 'project'));
   ?>
   <h2>
     <a href="<?php echo $project->getOverviewUrl() ?>">
@@ -75,20 +84,12 @@
   <?php if ($project->getShowDescriptionInOverview() && trim($project->getDescription())) { ?>
     <p><?php echo do_textile($project->getDescription()) ?></p>
   <?php } // if ?>
+
+  <?php $this->includeTemplate(get_template_path('view_progressbar', 'project')); ?>
 </div>
 <?php } // foreach ?>
 <?php } else { ?>
   <p><?php echo lang('no active projects in db') ?></p>
 <?php } // if ?>
-
-<?php if (is_array(page_actions())) { ?>
-<div class="btn-toolbar">
-  <div class="btn-group">
-    <?php foreach (page_actions() as $page_action) { ?>
-      <a class="btn btn-default btn-sm" href="<?php echo $page_action->getURL() ?>"><?php echo clean($page_action->getTitle()) ?></a>
-    <?php } // foreach ?>
-  </div>
-</div>
-<?php } ?>
 
 <?php trace(__FILE__,'end'); ?>

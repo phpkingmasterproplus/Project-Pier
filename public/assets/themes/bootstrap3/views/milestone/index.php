@@ -1,5 +1,4 @@
 <?php
-
   set_page_title(lang('milestones'));
   project_tabbed_navigation('milestones');
   project_crumbs(array(
@@ -15,6 +14,7 @@
   add_view_option(lang('card'), get_image_url( $view_image ), get_url('milestone', 'index', array("view" => "details") ) );
   add_view_option(lang('calendar'), get_image_url( "icons/calendar_off.png" ), get_url('milestone', 'calendar'));
 ?>
+
 <?php if ($all_visible_milestones) { ?>
   <div id="filter_assigned">
 <?php $attributes = array( 'onchange' => 'window.location = \'' . get_url('milestone', 'index', array('assigned'=>'')) . '\'+this.value' ); ?>
@@ -23,7 +23,9 @@
   <div id="milestones">
 <?php   if ($view_type == 'list') { ?>
     <table id="shortMilestones" class="table table-striped">
-      <tr class="milestone short"><th class="milestoneCompleted"></th><th class="milestoneDueDate"><?php echo lang('due date'); ?></th><th class="milestoneTitle"><?php echo lang('title'); ?></th><th class="milestoneDaysLeft"><?php echo lang('days') ?></th><th class="milestoneCommentsCount"><img src="<?php echo get_image_url("icons/comments.png"); ?>" title="Comments" alt="Comments"/></th></tr>
+      <tr class="short"><th class="milestoneCompleted"></th><th class="milestoneDueDate"><?php echo lang('due date'); ?></th><th class="milestoneTitle"><?php echo lang('title'); ?></th><th class="milestoneDaysLeft"><?php echo lang('days') ?></th>
+        <th class="milestoneCommentsCount"><i class="icon icon-comments"></i></th>
+      </tr>
 <?php
   foreach ($all_visible_milestones as $milestone) {
     $display = true;
@@ -45,7 +47,7 @@
 <?php if (is_array($late_milestones) && count($late_milestones)) { ?>
   <div id="lateMilestones">
   <h2><?php echo lang('late milestones') ?></h2>
-<?php 
+<?php
   foreach ($late_milestones as $milestone) {
     $display = true;
     if ($filter_assigned>='0:0') {
@@ -59,7 +61,7 @@
       $this->assign('milestone', $milestone);
       $this->includeTemplate(get_template_path('view_milestone', 'milestone'));
     }
-  } // foreach 
+  } // foreach
 ?>
   </div>
 <?php } // if ?>
@@ -67,7 +69,7 @@
 <?php if (is_array($today_milestones) && count($today_milestones)) { ?>
   <div id="todayMilestones">
   <h2><?php echo lang('today milestones') ?></h2>
-<?php 
+<?php
   foreach ($today_milestones as $milestone) {
     $display = true;
     if ($filter_assigned>='0:0') {
@@ -81,7 +83,7 @@
       $this->assign('milestone', $milestone);
       $this->includeTemplate(get_template_path('view_milestone', 'milestone'));
     }
-  } // foreach 
+  } // foreach
 ?>
   </div>
 <?php } // if ?>
@@ -89,7 +91,7 @@
 <?php if (is_array($upcoming_milestones) && count($upcoming_milestones)) { ?>
   <div id="upcomingMilestones">
   <h2><?php echo lang('upcoming milestones') ?></h2>
-<?php 
+<?php
   foreach ($upcoming_milestones as $milestone) {
     $display = true;
     if ($filter_assigned>='0:0') {
@@ -103,7 +105,7 @@
       $this->assign('milestone', $milestone);
       $this->includeTemplate(get_template_path('view_milestone', 'milestone'));
     }
-  } // foreach 
+  } // foreach
 ?>
   </div>
 <?php } // if ?>
@@ -111,7 +113,7 @@
 <?php if (is_array($completed_milestones) && count($completed_milestones)) { ?>
   <div id="completedMilestones">
   <h2><?php echo lang('completed milestones') ?></h2>
-<?php 
+<?php
   foreach ($completed_milestones as $milestone) {
     $display = true;
     if ($filter_assigned>='0:0') {
@@ -125,7 +127,7 @@
       $this->assign('milestone', $milestone);
       $this->includeTemplate(get_template_path('view_milestone', 'milestone'));
     }
-  } // foreach 
+  } // foreach
 ?>
   </div>
 <?php } // if ?>

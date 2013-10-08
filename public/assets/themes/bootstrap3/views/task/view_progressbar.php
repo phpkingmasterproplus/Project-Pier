@@ -1,33 +1,45 @@
-<?php 
-add_stylesheet_to_page('project/progressbar.css');
-if (is_array($task_list->getOpenTasks())) { 
+<?php
+if (is_array($task_list->getOpenTasks())) {
   $openTasks = count($task_list->getOpenTasks());
-} else { 
+} else {
   $openTasks = 0;
 } // if
-if (is_array($task_list->getOpenTasks())) { 
+
+if (is_array($task_list->getOpenTasks())) {
   $completedTasks = count($task_list->getCompletedTasks());
-} else { 
+} else {
   $completedTasks = 0;
 } // if
+
 $totalTasks = $task_list->countAllTasks();
+
 if ($totalTasks>0) {
   $percentTasks = round($completedTasks / $totalTasks * 100);
-} else { 
+} else {
   $percentTasks = 0;
 } // if
+
 $completed = $task_list->getCompletedOn();
 ?>
+
 <?php if (!empty($completed)) { ?>
-<div class="progressBar">
-  <div class="progressBarCompleted" style="width:100%"></div>
-  <div class="progressBarText"><?php echo lang('completed') ?>: <?php echo format_date($completed) ?></div>
+<div class="progress">
+  <div class="progress-bar" role="progressbar" style="width:100%;"
+       aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">
+    <span class="sr-only"><?php echo lang('completed'); ?></span>
+  </div>
+  <div class="progress-text">
+    <?php echo lang('completed') ?>: <?php echo $completed->format('Y-m-d'); ?>
+  </div>
 </div>
 <?php } else if ($totalTasks > 0) { ?>
-<div class="progressBar">
-  <div class="progressBarCompleted" style="width:<?php echo $percentTasks ?>%"></div>
-  <div class="progressBarText"><?php echo lang('completed') ?>: <?php echo $percentTasks ?>% (<?php echo $completedTasks ?> of <?php echo $totalTasks ?>)</div>
+<div class="progress">
+  <div class="progress-bar" role="progressbar" style="width: <?php echo $percentTasks ?>%;"
+       aria-valuenow="<?php echo $percentTasks ?>" aria-valuemin="0" aria-valuemax="100">
+    <span class="sr-only"><?php echo $percentTasks . '% ' . lang('completed'); ?></span>
+  </div>
+  <div class="progress-text">
+    <?php echo $percentTasks . '% ' . lang('completed') . ' (' . $completedTasks . ' of ' . $totalTasks . ')'; ?>
+  </div>
 </div>
-<?php } else { ?>
-<!--  <div class="progressBarText"><?php echo lang('no open task in task list') ?></div> -->
 <?php } // if ?>

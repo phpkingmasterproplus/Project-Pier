@@ -1389,7 +1389,8 @@ header a:hover{color:#fff}
 .bg-grey{background:url(../images/bg_body.png)}
 .sidebarBlock h2{font-size:24px}
 .sidebarBlock ul{padding-left:16px}
-.navbar{min-height:30px;font-size:12px;padding-left:0;margin-bottom:0;background-color:#ddd;border-radius:0;background:url(../images/bg_crumbs.png) #9abccc}
+.flash-message{position:fixed;top:0;left:25%;right:25%;z-index:999;text-align:center}
+.navbar{min-height:30px;font-size:12px;padding-left:0;margin-bottom:0;background-color:#ddd;border-radius:0;background:url(../images/bg_crumbs.png) #9abccc;z-index:998}
 .nav>li>a{padding:5px 15px;text-decoration:none;color:#fff;text-shadow:0 1px #6FA9C0}
 .nav>li>a:hover,.nav>li.active>a{padding:5px 15px;background:#6FA9C0}
 .breadcrumbs{border-bottom:1px solid #ddd;margin-bottom:10px}
@@ -1397,10 +1398,16 @@ header a:hover{color:#fff}
 .breadcrumbs li{display:inline-block;line-height:32px}
 .breadcrumbs li a{text-decoration:none;color:#333;padding:2px 4px}
 .breadcrumbs li a:hover{background:#6FA9C0;border-radius:3px;color:#fff}
-.project-card{background-color:#fff;padding:8px;margin-bottom:8px;box-shadow:1px 1px 1px #ccc}.project-card h2{margin:10px}
+#content .btn-toolbar{margin-bottom:10px}
+#content>h5 i:not(:first-child){margin-left:12px}
+.project-card{background-color:#fff;padding:8px;margin-bottom:8px;box-shadow:1px 1px 1px #ddd}.project-card h2{margin:10px}
 .project-card p{text-indent:12px}
 .project-card small{font-size:14px}
+.progress{position:relative;height:4px;margin-bottom:10px;overflow:visible}.progress .progress-text{position:absolute;bottom:4px;right:0;padding-right:8px;font-size:12px}
+#objectComments ul{list-style:none;padding-left:0}#objectComments ul li{background-color:#fff;padding:2px 8px;margin-bottom:4px;box-shadow:1px 1px 1px #ddd}
 .contact-pagination>li>a{padding:4px 8px}
+.tickets-filter{background-color:#fff;padding:8px;box-shadow:1px 1px 1px #ddd;margin-bottom:8px}.tickets-filter h4{margin:0}
+.tickets-filter h4+div{margin-top:8px}
 .task_list .icon:before{content:"\f0ae"}
 .milestone .icon:before{content:"\f135"}
 .ticket .icon:before{content:"\f188"}

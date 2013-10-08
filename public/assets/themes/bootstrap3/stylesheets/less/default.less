@@ -142,6 +142,12 @@ header a:hover {
 .sidebarBlock h2 { font-size: 24px; }
 .sidebarBlock ul { padding-left: 16px; }
 
+.flash-message {
+  position: fixed; top: 0; left: 25%; right: 25%;
+  z-index: 999;
+  text-align: center;
+}
+
 .navbar {
   min-height: 30px;
   font-size: 12px;
@@ -150,6 +156,7 @@ header a:hover {
   background-color: #ddd;
   border-radius: 0;
   background: url(../images/bg_crumbs.png) #9ABCCC;
+  z-index: 998;
 }
 .nav > li > a { padding: 5px 15px; text-decoration: none; color: #fff; text-shadow: 0 1px #6FA9C0; }
 .nav > li > a:hover, .nav > li.active > a { padding: 5px 15px; background: #6FA9C0; }
@@ -159,3 +166,10 @@ header a:hover {
 .breadcrumbs li { display: inline-block; line-height: 32px; }
 .breadcrumbs li a { text-decoration: none; color: #333; padding: 2px 4px; }
 .breadcrumbs li a:hover { background: #6FA9C0; border-radius: 3px; color: #fff; }
+
+#content {
+  .btn-toolbar { margin-bottom: 10px; }
+  & > h5 {
+    i:not(:first-child) { margin-left: 12px; }
+  }
+}
