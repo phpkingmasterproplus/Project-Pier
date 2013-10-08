@@ -1397,6 +1397,10 @@ header a:hover{color:#fff}
 .breadcrumbs li{display:inline-block;line-height:32px}
 .breadcrumbs li a{text-decoration:none;color:#333;padding:2px 4px}
 .breadcrumbs li a:hover{background:#6FA9C0;border-radius:3px;color:#fff}
+.project-card{background-color:#fff;padding:8px;margin-bottom:8px;box-shadow:1px 1px 1px #ccc}.project-card h2{margin:10px}
+.project-card p{text-indent:12px}
+.project-card small{font-size:14px}
+.contact-pagination>li>a{padding:4px 8px}
 .task_list .icon:before{content:"\f0ae"}
 .milestone .icon:before{content:"\f135"}
 .ticket .icon:before{content:"\f188"}

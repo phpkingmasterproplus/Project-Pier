@@ -1,6 +1,5 @@
 <?php
   trace(__FILE__, 'start');
-  add_stylesheet_to_page('application_logs.css')
 ?>
 
 <?php if (isset($application_logs_entries) && is_array($application_logs_entries) && count($application_logs_entries)) { ?>
