@@ -1390,9 +1390,8 @@ header a:hover{color:#fff}
 .sidebarBlock h2{font-size:24px}
 .sidebarBlock ul{padding-left:16px}
 .flash-message{position:fixed;top:0;left:25%;right:25%;z-index:999;text-align:center}
-.navbar{min-height:30px;font-size:12px;padding-left:0;margin-bottom:0;background-color:#ddd;border-radius:0;background:url(../images/bg_crumbs.png) #9abccc;z-index:998}
-.nav>li>a{padding:5px 15px;text-decoration:none;color:#fff;text-shadow:0 1px #6FA9C0}
-.nav>li>a:hover,.nav>li.active>a{padding:5px 15px;background:#6FA9C0}
+nav.navbar{min-height:30px;font-size:12px;padding-left:0;margin-bottom:0;background-color:#ddd;border-radius:0;background:url(../images/bg_crumbs.png) #9abccc;z-index:998}nav.navbar .nav>li>a{padding:5px 15px;text-decoration:none;color:#fff;text-shadow:0 1px #6FA9C0}
+nav.navbar .nav>li>a:hover,nav.navbar .nav>li.active>a{padding:5px 15px;background:#6FA9C0}
 .breadcrumbs{border-bottom:1px solid #ddd;margin-bottom:10px}
 .breadcrumbs ul{list-style:none;padding-left:0;margin-bottom:0}
 .breadcrumbs li{display:inline-block;line-height:32px}

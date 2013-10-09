@@ -148,7 +148,7 @@ header a:hover {
   text-align: center;
 }
 
-.navbar {
+nav.navbar {
   min-height: 30px;
   font-size: 12px;
   padding-left: 0;
@@ -157,9 +157,9 @@ header a:hover {
   border-radius: 0;
   background: url(../images/bg_crumbs.png) #9ABCCC;
   z-index: 998;
+  .nav > li > a { padding: 5px 15px; text-decoration: none; color: #fff; text-shadow: 0 1px #6FA9C0; }
+  .nav > li > a:hover, .nav > li.active > a { padding: 5px 15px; background: #6FA9C0; }
 }
-.nav > li > a { padding: 5px 15px; text-decoration: none; color: #fff; text-shadow: 0 1px #6FA9C0; }
-.nav > li > a:hover, .nav > li.active > a { padding: 5px 15px; background: #6FA9C0; }
 
 .breadcrumbs { border-bottom: 1px solid #ddd; margin-bottom: 10px; }
 .breadcrumbs ul { list-style: none; padding-left: 0; margin-bottom: 0; }

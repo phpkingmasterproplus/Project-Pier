@@ -43,9 +43,7 @@
       </div>
 
       <div class="col-md-3">
-        <?php if (isset($content_for_sidebar)) { ?>
-        <?php echo $content_for_sidebar ?>
-        <?php } // if ?>
+        <?php if (isset($content_for_sidebar)) { echo $content_for_sidebar; } ?>
       </div>
     </div>
 
