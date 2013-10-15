@@ -1351,6 +1351,7 @@ a .icon-rotate-90:before,a .icon-rotate-180:before,a .icon-rotate-270:before,a .
 .icon-renren:before{content:"\f18b"}
 h1,h2,h3,h4,h5,h6{font-family:georgia,'times-new-roman',times,sans-serif}
 body{background:url(../images/bg.png)}
+form span.required{color:#B94A48}
 #innerContentWrapper{background:url(../images/bg_body.png);border-bottom:2px solid #141414}
 #content{min-height:300px;border:1px solid #ddd;background:url(../images/bg_content.png);padding:16px}
 #pageContent{padding:12px 12px 25px 12px;border-top:1px solid #e2e2e2}
@@ -1380,7 +1381,7 @@ body{background:url(../images/bg.png)}
 footer{padding:20px 0;color:#999;text-shadow:0 1px 1px #111}
 #project.row{padding:5px 10px 10px 14px;border-top:1px solid #ddd;background:#FCFCFC;border-bottom:1px solid #ddd}
 tr.milestone{background-color:#f2dede}
-tr.task,tr.ticket{background-color:#fcf8e3}
+tr.task,tr.task_list,tr.ticket{background-color:#fcf8e3}
 header{height:24px;line-height:24px;background:#2c3e50;color:#fff;text-align:right;font-size:12px;}
 header .pull-left a{font-weight:bold;padding:0 8px}
 header a{color:#fff}

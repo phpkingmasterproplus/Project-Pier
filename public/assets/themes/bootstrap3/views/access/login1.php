@@ -105,7 +105,7 @@ if ($handle = opendir(ROOT . '/public/assets/themes')) {
     <div id="options2" class="hidden">
       <ul>
         <li id="loginClearCookies"><a href="<?php echo get_url('access', 'clear_cookies') ?>"><?php echo lang('clear cookies') ?></a></li>
-        <li id="loginForgotPassword"><a href="<?php echo get_url('access', 'forgot_password') ?>"><?php echo lang('forgot password') ?></a></li>  
+        <li id="loginForgotPassword"><a href="<?php echo get_url('access', 'forgot_password') ?>"><?php echo lang('forgot password') ?></a></li>
         <li>
           <label class="checkbox" for="loginRememberMe"><?php echo lang('remember me', duration(config_option('remember_login_lifetime'))) ?></label>
           <?php echo checkbox_field('login[remember]', (array_var($login_data, 'remember') == 'checked'), array('id' => 'loginRememberMe')) ?>

@@ -14,12 +14,12 @@
         $attributes = array('for' => trim($for));
       } // if
     } // if
-    
+
     $render_text = trim($text) . $after_label;
     if ($is_required) {
       $render_text .= ' <span class="label_required">*</span>';
     }
-    
+
     return open_html_tag('label', $attributes) . $render_text . close_html_tag('label');
   } // form_label
 
@@ -34,13 +34,13 @@
   */
   function input_field($name, $value = null, $attributes = null) {
     $field_attributes = is_array($attributes) ? $attributes : array();
-    
+
     $field_attributes['name'] = $name;
     $field_attributes['value'] = $value;
-    
+
     return open_html_tag('input', $field_attributes, true);
   } // input_field
-  
+
   /**
   * Render text field
   *
@@ -51,7 +51,7 @@
   * @return string
   */
   function text_field($name, $value = null, $attributes = null) {
-    
+
     // If we don't have type attribute set it
     if (array_var($attributes, 'type', false) === false) {
       if (is_array($attributes)) {
@@ -60,12 +60,12 @@
         $attributes = array('type' => 'text');
       } // if
     } // if
-    
+
     // And done!
     return input_field($name, $value, $attributes);
-    
+
   } // text_field
-  
+
   /**
   * Return password field
   *
@@ -76,19 +76,19 @@
   * @return string
   */
   function password_field($name, $value = null, $attributes = null) {
-    
+
     // Set type to password
     if (is_array($attributes)) {
       $attributes['type'] = 'password';
     } else {
       $attributes = array('type' => 'password');
     } // if
-    
+
     // Return text field
     return text_field($name, $value, $attributes);
-    
+
   } // password_filed
-  
+
   /**
   * Return file field
   *
@@ -99,19 +99,19 @@
   * @return string
   */
   function file_field($name, $value = null, $attributes = null) {
-    
+
     // Set type to password
     if (is_array($attributes)) {
       $attributes['type'] = 'file';
     } else {
       $attributes = array('type' => 'file');
     } // if
-    
+
     // Return text field
     return text_field($name, $value, $attributes);
-    
+
   } // file_field
-  
+
   /**
   * Render radio field
   *
@@ -123,7 +123,7 @@
   * @return string
   */
   function radio_field($name, $checked = false, $attributes = null) {
-    
+
     // Prepare attributes array
     if (is_array($attributes)) {
       $attributes['type'] = 'radio';
@@ -133,13 +133,13 @@
     } else {
       $attributes = array('type' => 'radio', 'class' => 'checkbox');
     } // if
-    
+
     // Value
     $value = array_var($attributes, 'value', false);
     if ($value === false) {
       $value = 'checked';
     }
-    
+
     // Checked
     if ($checked) {
       $attributes['checked'] = 'checked';
@@ -148,12 +148,12 @@
         unset($attributes['checked']);
       }
     } // if
-    
+
     // And done
     return input_field($name, $value, $attributes);
-    
+
   } // radio_field
-  
+
   /**
   * Render checkbox field
   *
@@ -165,7 +165,7 @@
   * @return string
   */
   function checkbox_field($name, $checked = false, $attributes = null) {
-    
+
     // Prepare attributes array
     if (is_array($attributes)) {
       $attributes['type'] = 'checkbox';
@@ -175,13 +175,13 @@
     } else {
       $attributes = array('type' => 'checkbox', 'class' => 'checkbox');
     } // if
-    
+
     // Value
     $value = array_var($attributes, 'value', false);
     if ($value === false) {
       $value = 'checked';
     }
-    
+
     // Checked
     if ($checked) {
       $attributes['checked'] = 'checked';
@@ -190,12 +190,12 @@
         unset($attributes['checked']);
       }
     } // if
-    
+
     // And done
     return input_field($name, $value, $attributes);
-    
+
   } // checkbox_field
-  
+
   /**
   * This helper will render select list box. Options is array of already rendered option tags
   *
@@ -211,7 +211,7 @@
     } else {
       $attributes = array('name' => $name);
     } // if
-    
+
     $output = open_html_tag('select', $attributes) . "\n";
     if (is_array($options)) {
       foreach ($options as $option) {
@@ -220,7 +220,7 @@
     } // if
     return $output . close_html_tag('select') . "\n";
   } // select_box
-  
+
   /**
   * Render option tag
   *
@@ -240,7 +240,7 @@
     } // if
     return open_html_tag('option', $attributes) . clean($text) . close_html_tag('option');
   } // option_tag
-  
+
   /**
   * Render option group
   *
@@ -255,7 +255,7 @@
     } else {
       $attributes = array('label' => $label);
     } // if
-    
+
     $output = open_html_tag('optgroup', $attributes) . "\n";
     if (is_array($options)) {
       foreach ($options as $option) {
@@ -281,16 +281,16 @@
     $attributes['class'] = 'submit';
     $attributes['type'] = 'submit';
     $attributes['accesskey'] = $accesskey;
-    
+
     if ($accesskey) {
       if (strpos($title, $accesskey) !== false) {
         $title = str_replace_first($accesskey, "<u>$accesskey</u>", $title);
       } // if
     } // if
-    
+
     return open_html_tag('button', $attributes) . $title . close_html_tag('button');
   } // submit_button
-  
+
   /**
   * Return textarea tag
   *
@@ -311,14 +311,14 @@
     if (!isset($attributes['cols']) || trim($attributes['cols'] == '')) {
       $attributes['cols'] = '40'; // required attribute
     } // if
-    
+
     return open_html_tag('textarea', $attributes) . clean($value) . close_html_tag('textarea');
   } // textarea
-  
+
   // ---------------------------------------------------
   //  Widgets
   // ---------------------------------------------------
-  
+
   /**
   * Return date time picker widget
   *
@@ -330,7 +330,7 @@
   function pick_datetime_widget($name, $value = null) {
     return text_field($name, $value);
   } // pick_datetime_widget
-  
+
   /**
   * Return pick date widget
   *
@@ -348,11 +348,11 @@
     if ($value instanceof DateTimeValue) {
       $v = Localization::instance()->formatDate($value, null, null);
     }
-    $attr = array('class' => 'datetimepicker');
+    $attr = array('class' => 'form-control datetimepicker');
     if (is_array($attributes)) $attr += $attributes;
     return text_field($name, $v, $attr);
   } // pick_date_widget
-  
+
   /**
   * Return pick time widget
   *
@@ -364,7 +364,7 @@
   function pick_time_widget($name, $value = null, $attributes = null) {
     return text_field($name, $value, $attributes);
   } // pick_time_widget
-  
+
   /**
   * Return WYSIWYG editor widget
   *
@@ -380,7 +380,7 @@
     }
     return textarea_field($name, $value, $editor_attributes);
   } // editor_widget
-  
+
   /**
   * Render yes no widget
   *
@@ -397,10 +397,10 @@
     $no_input = radio_field($name, !$value, array('id' => $id_base . 'No', 'class' => 'yes_no', 'value' => 0));
     $yes_label = label_tag($yes_lang, $id_base . 'Yes', false, array('class' => 'yes_no'), '');
     $no_label = label_tag($no_lang, $id_base . 'No', false, array('class' => 'yes_no'), '');
-    
+
     return $yes_input . ' ' . $yes_label . ' ' . $no_input . ' ' . $no_label;
   } // yes_no_widget
-  
+
   /**
   * Show select country box
   *
@@ -416,18 +416,18 @@
     foreach ($country_codes as $code) {
       $countries[$code] = lang("country $code");
     } // foreach
-    
+
     asort($countries);
-    
+
     $country_options = array(option_tag(lang('none'), ''));
     foreach ($countries as $country_code => $country_name) {
       $option_attributes = $country_code == $value ? array('selected' => true) : null;
       $country_options[] = option_tag($country_name, $country_code, $option_attributes);
     } // foreach
-    
+
     return select_box($name, $country_options, $attributes);
   } // select_country_widget
-  
+
   /**
   * Render select timezone widget
   *
@@ -439,14 +439,14 @@
   function select_timezone_widget($name, $value = null, $attributes = null) {
     $selected_value = (float) $value;
     $all_timezones = Timezones::getTimezones();
-    
+
     $options = array();
     foreach ($all_timezones as $timezone) {
       $option_attributes = $selected_value == $timezone ? array('selected' => true) : null;
       $option_text = $timezone > 0 ? lang("timezone gmt +$timezone") : lang("timezone gmt $timezone");
       $options[] = option_tag($option_text, $timezone, $option_attributes);
     } // if
-    
+
     return select_box($name, $options, $attributes);
   } // select_timezone_widget
 
