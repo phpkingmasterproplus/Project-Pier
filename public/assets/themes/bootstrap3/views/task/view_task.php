@@ -10,10 +10,10 @@
 
   $options = array();
   if($task->canEdit(logged_user())) {
-    $options[] = '<a class="btn btn-default btn-sm" href="' . $task->getEditUrl() . '"><i class="icon icon-fixed-width icon-edit"></i></a>';
+    $options[] = '<a title="Edit" class="btn btn-default btn-sm" href="' . $task->getEditUrl() . '"><i class="icon icon-fixed-width icon-edit"></i></a>';
   }
   if($task->canDelete(logged_user())) {
-    $options[] = '<a class="btn btn-default btn-sm" href="' . $task->getDeleteUrl() . '"><i class="icon icon-fixed-width icon-trash"></i></a>';
+    $options[] = '<a title="Delete" class="btn btn-default btn-sm" href="' . $task->getDeleteUrl() . '"><i class="icon icon-fixed-width icon-trash"></i></a>';
   }
 
   // unknown
@@ -25,7 +25,7 @@
 
   if($task->canChangeStatus(logged_user())) {
     if ($task->isOpen()) {
-      $options[] = '<a class="btn btn-default btn-sm" href="' . $task->getCompleteUrl() . '"><i class="icon icon-fixed-width icon-ok"></i></a>';
+      $options[] = '<a title="Close" class="btn btn-default btn-sm" href="' . $task->getCompleteUrl() . '"><i class="icon icon-fixed-width icon-ok"></i></a>';
     } else {
       $options[] = '<a href="' . $task->getOpenUrl() . '">' . lang('open task') . '</a>';
     } // if

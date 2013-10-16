@@ -9,13 +9,13 @@
   <strong><?php echo clean(logged_user()->getDisplayName()) ?></strong>
   <!-- <small>(administrator)</small> -->
   <span class="badge">
-    <a title="Open and assigned to me" href="#">
+    <a title="issues assigned to me" href="#">
       <i class="icon icon-bug"></i> N/A
     </a>
   </span>
   <span class="badge">
-    <a title="Open and reported by me" href="#">
-      <i class="icon icon-bullhorn"></i> N/A
+    <a title="tasks assigned to me" href="#">
+      <i class="icon icon-tasks"></i> N/A
     </a>
   </span>&nbsp;&nbsp;&nbsp;&nbsp;
   <a href="<?php echo logged_user()->getAccountUrl() ?>" title="My Account"><i class="icon icon-user"></i></a>&nbsp;&nbsp;&nbsp;&nbsp;

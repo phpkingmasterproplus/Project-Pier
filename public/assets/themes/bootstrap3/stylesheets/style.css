@@ -1412,5 +1412,5 @@ nav.navbar .nav>li>a:hover,nav.navbar .nav>li.active>a{padding:5px 15px;backgrou
 .milestone .icon:before{content:"\f135"}
 .ticket .icon:before{content:"\f188"}
 .task .icon:before{content:"\f046"}
-.comment .icon:before{content:"\f0e5"}
+.message .icon:before,.comment .icon:before{content:"\f0e5"}
 .project .icon:before,.company .icon:before,.contact .icon:before,.user .icon:before,.category .icon:before{content:"\f085"}
