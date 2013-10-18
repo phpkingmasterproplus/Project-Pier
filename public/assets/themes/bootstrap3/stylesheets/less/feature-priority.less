@@ -1,0 +1,41 @@
+// ** should be `span.task-priority-1`
+[class^="task-priority-"]::before,
+[class*=" task-priority-"]::before { padding: 2px 6px; font-size: 12px; }
+.task-priority-1::before { }
+.task-priority-2::before { content: "Now"; font-weight: bold; color: #fff; background-color: #ef2929; }
+.task-priority-3::before { content: "Next"; font-weight: bold; }
+.task-priority-4::before { content: "Todo"; }
+.task-priority-5::before { content: "Normal"; }
+.task-priority-6::before { content: ""; }
+.task-priority-7::before { content: "Later"; }
+.task-priority-8::before { content: "If Ever"; }
+.task-priority-9::before { }
+
+
+/* FROM MANTISBT: color for visual assistance */
+/*
+array( 'new'          => (scarlet red #ef2929)
+       'feedback'     => (plum        #75507b)
+       'acknowledged' => (orango      #f57900)
+       'confirmed'    => (butter      #fce94f)
+       'assigned'     => (sky blue    #729fcf)
+       'resolved'     => (chameleon   #8ae234)
+       'closed'       => (aluminum    #babdb6)*/
+
+// .bgc-status-10 { background-color: #fcbdbd; } /* new */
+// .bgc-status-20 { background-color: #e3b7eb; } /* feedback */
+// .bgc-status-30 { background-color: #ffcd85; } /* acknowledged */
+// .bgc-status-40 { background-color: #fff494; } /* confirmed */
+// .bgc-status-50 { background-color: #c2dfff; } /* assigned */
+// .bgc-status-80 { background-color: #d2f5b0; } /* resolved */
+// .bgc-status-90 { background-color: #c9ccc4; } /* closed */
+
+// .bgc-resolution-10 { background-color: #ef2929; } /* open */
+// .bgc-resolution-20 { background-color: #8ae234; } /* fixed */
+/*30:reopened
+40:unable to duplicate
+50:not fixable
+60:duplicate
+70:not a bug
+80:suspended
+90:wont fix*/

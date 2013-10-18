@@ -1,10 +1,11 @@
 <header>
   <span class="pull-left"><a href="<?php echo get_url('dashboard', 'index') ?>">Dashboard</a></span>
   <span class="pull-left"><a href="<?php echo get_url('dashboard', 'my_projects') ?>">Projects</a></span>
+  <span class="pull-left"><a href="<?php echo get_url('dashboard', 'my_tasks') ?>">Tasks</a></span>
   <?php if(logged_user()->isAdministrator()) { ?>
   <span class="pull-left"><a href="<?php echo get_url('administration') ?>">Admin</a></span>
   <?php } ?>
-  <span class="pull-left"><a href="#">Help</a></span>
+  <span class="pull-left"><a href="#" title="Mannual"><i class="icon icon-question-sign"></i></a></span>
 
   <strong><?php echo clean(logged_user()->getDisplayName()) ?></strong>
   <!-- <small>(administrator)</small> -->

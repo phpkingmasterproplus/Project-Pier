@@ -1381,7 +1381,7 @@ form span.required{color:#B94A48}
 footer{padding:20px 0;color:#999;text-shadow:0 1px 1px #111}
 #project.row{padding:5px 10px 10px 14px;border-top:1px solid #ddd;background:#FCFCFC;border-bottom:1px solid #ddd}
 tr.milestone{background-color:#f2dede}
-tr.task,tr.task_list,tr.ticket{background-color:#fcf8e3}
+tr.task,tr.task-list,tr.ticket{background-color:#fcf8e3}
 header{height:24px;line-height:24px;background:#2c3e50;color:#fff;text-align:right;font-size:12px;}
 header .pull-left a{font-weight:bold;padding:0 8px}
 header a{color:#fff}
@@ -1403,14 +1403,23 @@ nav.navbar .nav>li>a:hover,nav.navbar .nav>li.active>a{padding:5px 15px;backgrou
 .project-card{background-color:#fff;padding:8px;margin-bottom:8px;box-shadow:1px 1px 1px #ddd}.project-card h2{margin:10px}
 .project-card p{text-indent:12px}
 .project-card small{font-size:14px}
+.tasks tr.completed{-webkit-filter:grayscale(100%);-moz-filter:grayscale(100%)}
 .progress{position:relative;height:4px;margin-bottom:10px;overflow:visible}.progress .progress-text{position:absolute;bottom:4px;right:0;padding-right:8px;font-size:12px}
 #objectComments ul{list-style:none;padding-left:0}#objectComments ul li{background-color:#fff;padding:2px 8px;margin-bottom:4px;box-shadow:1px 1px 1px #ddd}
 .contact-pagination>li>a{padding:4px 8px}
 .tickets-filter{background-color:#fff;padding:8px;box-shadow:1px 1px 1px #ddd;margin-bottom:8px}.tickets-filter h4{margin:0}
 .tickets-filter h4+div{margin-top:8px}
-.task_list .icon:before{content:"\f0ae"}
+.task-list .icon:before{content:"\f0ae"}
 .milestone .icon:before{content:"\f135"}
 .ticket .icon:before{content:"\f188"}
 .task .icon:before{content:"\f046"}
 .message .icon:before,.comment .icon:before{content:"\f0e5"}
 .project .icon:before,.company .icon:before,.contact .icon:before,.user .icon:before,.category .icon:before{content:"\f085"}
+[class^="task-priority-"]::before,[class*=" task-priority-"]::before{padding:2px 6px;font-size:12px}
+.task-priority-2::before{content:"Now";font-weight:bold;color:#fff;background-color:#ef2929}
+.task-priority-3::before{content:"Next";font-weight:bold}
+.task-priority-4::before{content:"Todo"}
+.task-priority-5::before{content:"Normal"}
+.task-priority-6::before{content:""}
+.task-priority-7::before{content:"Later"}
+.task-priority-8::before{content:"If Ever"}

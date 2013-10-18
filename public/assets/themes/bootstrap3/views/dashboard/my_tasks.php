@@ -43,7 +43,7 @@
       <?php if (is_array($assigned_tasks) && count($assigned_tasks)) { ?>
       <small>
         <a href="<?php echo $active_project->getTasksUrl() ?>">
-          <i class="icon icon-tasks"></i> <?php echo lang('tasks') ?>
+          <i class="icon icon-tasks"></i> task lists
         </a>
       </small>
       <?php } // if ?>

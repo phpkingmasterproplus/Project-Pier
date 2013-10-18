@@ -6,7 +6,7 @@
   } // if
   if (ProjectTaskList::canAdd(logged_user(), active_project())) {
     $task_list_options[] = '<a class="btn btn-default btn-sm" href="' . $task_list->getCopyUrl() . '" title="Copy"><i class="icon icon-copy"></i></a>';
-    $task_list_options[] = '<a class="btn btn-default btn-sm" href="' . $task_list->getMoveUrl() . '" title="Move"><i class="icon icon-move"></i></a>';
+    $task_list_options[] = '<a class="btn btn-default btn-sm" href="' . $task_list->getMoveUrl() . '" title="Move"><i class="icon icon-cut"></i></a>';
   } // if
   if ($task_list->canDelete(logged_user())) {
     $task_list_options[] = '<a class="btn btn-default btn-sm" href="' . $task_list->getDeleteUrl() . '" title="Delete"><i class="icon icon-trash"></i></a>';
@@ -15,7 +15,7 @@
     $task_list_options[] = '<a class="btn btn-default btn-sm" href="' . $task_list->getAddTaskUrl() . '" title="Add Task"><i class="icon icon-file-alt"></i></a>';
   } // if
   if ($task_list->canReorderTasks(logged_user())) {
-    $task_list_options[] = '<a class="btn btn-default btn-sm" href="' . $task_list->getReorderTasksUrl($on_list_page) . '">' . lang('reorder tasks') . '</a>';
+    $task_list_options[] = '<a class="btn btn-default btn-sm" href="' . $task_list->getReorderTasksUrl($on_list_page) . '">Set Priorities</a>';
   } // if
   if ($cc = $task_list->countComments()) {
     $task_list_options[] = '<a class="btn btn-default btn-sm" href="'. $task_list->getViewUrl() .'#objectComments">'. lang('comments') .'('. $cc .')</a>';
@@ -58,20 +58,23 @@
     </div>
   <?php } // if ?>
 
-  <?php if (is_array($task_list->getOpenTasks())) { ?>
-    <div class="openTasks">
-      <table class="table table-bordered table-condensed table-striped">
+  <div class="tasks">
+    <table class="table table-bordered table-condensed">
+      <?php if (is_array($task_list->getOpenTasks())) { ?>
         <tr>
-          <th>id</th>
-          <th>subject</th>
-          <th>assigned to</th>
-          <th>created</th>
-          <th>due date</th>
+          <th>#</th>
+          <th>Priority</th>
+          <th>Subject</th>
+          <th>Assigned to</th>
+          <th>Created</th>
+          <th>Due date</th>
+          <th></th>
           <th></th>
         </tr>
         <?php foreach ($task_list->getOpenTasks() as $task) { ?>
         <tr>
           <td><?php echo $task->getId(); ?></td>
+          <td><span class="task-priority-<?php echo floor($task->getOrder() / 100); ?>"></span></td>
           <td>
             <?php if ($task->canView(logged_user())) { ?>
             <a href="<?php echo $task->getViewUrl($on_list_page); ?>"><?php echo $task->getText(); ?></a>
@@ -91,48 +94,38 @@
               <i class="icon icon-fixed-width icon-trash"></i>
             </a>
             <?php } // if ?>
-            <?php if ($task->canChangeStatus(logged_user()) && $task->isOpen()) { ?>
-            <a title="Close" href="<?php echo $task->getCompleteUrl(); ?>">
-              <i class="icon icon-fixed-width icon-ok"></i>
-            </a>
-            <!-- FIXME: how to re-open task? -->
-            <?php } // if ?>
             <?php if ($cc = $task->countComments()) { ?>
               <a title="Comments" href="<?php echo $task->getViewUrl(); ?>#objectComments">
                 <i class="icon icon-fixed-width icon-comments"></i> <?php echo $cc; ?>
               </a>
             <?php } ?>
           </td>
+          <td>
+            <?php if ($task->canChangeStatus(logged_user()) && $task->isOpen()) { ?>
+            <a href="<?php echo $task->getCompleteUrl(); ?>">Close</a>
+            <?php } // if ?>
+          </td>
         </tr>
         <?php } // foreach ?>
-      </table>
-    </div>
-  <?php } // if ?>
-
-  <?php if (is_array($task_list->getCompletedTasks())) { ?>
-    <div class="completedTasks">
-      <?php
-        // ** unknown
-        // if ($on_list_page) {
-        //   echo lang('completed tasks');
-        // } else {
-        //   echo lang('recently completed tasks');
-        // }
-      ?>
-      <table class="table table-bordered table-condensed table-striped">
-        <tr>
-          <th>id</th>
-          <th>subject</th>
-          <th>completed by</th>
-          <th>completed</th>
+      <?php } // if ?>
+      <?php if (is_array($task_list->getCompletedTasks())) { ?>
+        <tr class="completed">
+          <th></th>
+          <th></th>
+          <th></th>
+          <th>Completed by</th>
+          <th></th>
+          <th>Completed</th>
+          <th></th>
           <th></th>
         </tr>
         <?php $counter = 0; ?>
         <?php foreach ($task_list->getCompletedTasks() as $task) { ?>
         <?php $counter++; ?>
         <?php if ($on_list_page || ($counter <= 5)) { ?>
-        <tr>
+        <tr class="completed">
           <td><?php echo $task->getId(); ?></td>
+          <td></td>
           <td>
             <?php if ($task->canView(logged_user())) { ?>
             <a href="<?php echo $task->getViewUrl($on_list_page); ?>"><?php echo $task->getText(); ?></a>
@@ -143,6 +136,7 @@
               <a href="<?php echo $task->getCompletedBy()->getCardUrl(); ?>"><?php echo clean($task->getCompletedBy()->getDisplayName()); ?></a>
             <? } // if ?>
           </td>
+          <td><?php if (!is_null($task->getStartDate())) { echo $task->getStartDate()->format("Y-m-d"); } ?></td>
           <td><?php echo $task->getCompletedOn()->format("Y-m-d"); ?></td>
           <td>
             <?php if ($task->canEdit(logged_user())) { ?>
@@ -151,23 +145,33 @@
             <?php if ($task->canDelete(logged_user())) { ?>
               <a title="<?php echo lang('delete'); ?>" href="<?php echo $task->getDeleteUrl(); ?>"><i class="icon icon-fixed-width icon-trash"></i></a>
             <?php } // if ?>
-            <!-- FIXME: how to close task -->
-            <?php if ($task->canChangeStatus(logged_user())) { ?>
-              <a href="<?php echo $task->getOpenUrl(); ?>"><?php echo lang('open'); ?></a>
-            <?php } // if ?>
             <?php if ($cc = $task->countComments()) { ?>
               <a href="<?php echo $task->getViewUrl()?>#objectComments"><i class="icon icon-fixed-width icon-comments"></i><?php echo $cc; ?></a>
+            <?php } // if ?>
+          </td>
+          <td>
+            <?php if ($task->canChangeStatus(logged_user())) { ?>
+              <a href="<?php echo $task->getOpenUrl(); ?>">Re-Open</a>
             <?php } // if ?>
           </td>
         </tr>
         <?php } // if ?>
         <?php } // foreach ?>
         <?php if (!$on_list_page && $counter > 5) { ?>
-        <tr>
-          <td colspan="5"><a href="<?php echo $task_list->getViewUrl() ?>"><?php echo lang('view all completed tasks', $counter) ?></a></td>
+        <tr class="completed">
+          <td colspan="7"><a href="<?php echo $task_list->getViewUrl() ?>"><?php echo lang('view all completed tasks', $counter) ?></a></td>
         </tr>
         <?php } // if ?>
-      </table>
-    </div>
-  <?php } // if ?>
+      <?php } // if ?>
+    </table>
+  </div>
 </div>
+
+<?php
+  // ** unknown
+  // if ($on_list_page) {
+  //   echo lang('completed tasks');
+  // } else {
+  //   echo lang('recently completed tasks');
+  // }
+?>
