@@ -30,7 +30,7 @@
 
   <div class="form-group">
     <label for="" class="col-lg-2 control-label">
-      <?php echo lang('text') ?>
+      <?php echo lang('task') ?>
       <span class="required">*</span>
     </label>
     <div class="col-lg-5">

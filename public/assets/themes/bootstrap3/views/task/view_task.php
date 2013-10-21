@@ -4,8 +4,7 @@
   project_tabbed_navigation('tasks');
   project_crumbs(array(
     array(lang('tasks'), get_url('task')),
-    array($task_list->getName(), $task_list->getViewUrl()),
-    array(lang('view task'))
+    array($task_list->getName())
   ));
 
   $options = array();
@@ -25,9 +24,9 @@
 
   if($task->canChangeStatus(logged_user())) {
     if ($task->isOpen()) {
-      $options[] = '<a title="Close" class="btn btn-default btn-sm" href="' . $task->getCompleteUrl() . '"><i class="icon icon-fixed-width icon-ok"></i></a>';
+      $options[] = '<a class="btn btn-default btn-sm" href="' . $task->getCompleteUrl() . '">Close</a>';
     } else {
-      $options[] = '<a href="' . $task->getOpenUrl() . '">' . lang('open task') . '</a>';
+      $options[] = '<a class="btn btn-default btn-sm" href="' . $task->getOpenUrl() . '">Re-Open</a>';
     } // if
   } // if
 ?>

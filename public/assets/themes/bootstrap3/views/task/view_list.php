@@ -11,5 +11,11 @@
   } // if
 ?>
 <?php $this->assign('on_list_page', true); ?>
-<?php $this->includeTemplate(get_template_path('task_list', 'task')); ?>
+
+<div class="tasks">
+  <table class="table-bordered table-condensed">
+    <?php $this->includeTemplate(get_template_path('task_list', 'task')); ?>
+  </table>
+</div>
+
 <?php echo render_object_comments($task_list, $task_list->getViewUrl()) ?>

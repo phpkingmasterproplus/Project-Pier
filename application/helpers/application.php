@@ -7,7 +7,7 @@
   *
   * @http://www.projectpier.org/
   */
-  
+
   /**
   * Render user box
   *
@@ -20,7 +20,7 @@
     tpl_assign('_userbox_projects', $user->getActiveMainProjects());
     return tpl_fetch(get_template_path('user_box', 'application'));
   } // render_user_box
-  
+
   /**
   * This function will render system notices for this user
   *
@@ -31,18 +31,18 @@
     if (!$user->isAdministrator()) {
       return;
     }
-    
+
     $system_notices = array();
     if (config_option('upgrade_check_enabled', false) && config_option('upgrade_last_check_new_version', false)) {
       $system_notices[] = lang('new version available', get_url('administration', 'upgrade'));
     }
-    
+
     if (count($system_notices)) {
       tpl_assign('_system_notices', $system_notices);
       return tpl_fetch(get_template_path('system_notices', 'application'));
     } // if
   } // render_system_notices
-  
+
   /**
   * Render select company box
   *
@@ -123,7 +123,7 @@
       } // foreach
     } // if
     return select_box($name, $all_options, $attributes);
-  } // select_contact  
+  } // select_contact
 
   /**
   * Render select project user box
@@ -159,7 +159,7 @@
         if (!($company instanceof Company)) {
           continue;
         } // if
-        
+
         $options = array();
         if (is_array($users)) {
           foreach ($users as $user) {
@@ -169,19 +169,19 @@
             $option_attributes = ($user->getId() == $selected ? array('selected' => 'selected') : null);
             $display_name = $user->getDisplayName().($user->getId() == logged_user()->getId() ? ' ('.lang('you').')' : '');
             $options[] = option_tag($display_name, $user->getId(), $option_attributes);
-            
+
           } // foreach
           if (count($options)) {
             $all_options[] = option_group_tag($company->getName(), $options);
           } // if
-          
+
         }
       } // foreach
     } // if
-    
+
     return select_box($name, $all_options, $attributes);
   } // select_project_user
-  
+
   /**
   * Renders select project box
   *
@@ -200,7 +200,7 @@
     } else {
       $attributes = array('class' => 'select_project');
     } // if
-    
+
     $options = array(option_tag(lang('none'), 0));
     if (logged_user()->isAdministrator()) {
       $projects = Projects::getAll();
@@ -214,7 +214,7 @@
         $options[] = option_tag($project->getName(), $project->getId(), $option_attributes);
       } // foreach
     } // if
-    
+
     return select_box($name, $options, $attributes);
   } // select_milestone
 
@@ -249,10 +249,10 @@
       foreach ($assignees as $assignee) {
         $option_attributes = ($assignee->getId() == $selected ? array('selected' => 'selected') : null);
         $display_name = $assignee->getObjectName().($assignee->getId() == logged_user()->getId() ? ' ('.lang('you').')' : '');
-        $options[] = option_tag($display_name, $assignee->getId(), $option_attributes);       
+        $options[] = option_tag($display_name, $assignee->getId(), $option_attributes);
       } // foreach
     }
-    
+
     return select_box($name, $options, $attributes);
   } // select_assignee
 
@@ -272,14 +272,14 @@
     if (!($project instanceof Project)) {
       throw new InvalidInstanceError('$project', $project, 'Project');
     } // if
-    
+
     $logged_user = logged_user();
-    
+
     $can_assign_to_owners = $logged_user->isMemberOfOwnerCompany() || $logged_user->getProjectPermission($project, PermissionManager::CAN_ASSIGN_TO_OWNERS);
     $can_assign_to_other = $logged_user->isMemberOfOwnerCompany() || $logged_user->getProjectPermission($project, PermissionManager::CAN_ASSIGN_TO_OTHER);
-    
+
     $grouped_users = $project->getUsers(true);
-    
+
     $options = array(option_tag(lang('anyone'), '0:0'));
     if (is_array($grouped_users) && count($grouped_users)) {
       foreach ($grouped_users as $company_id => $users) {
@@ -287,7 +287,7 @@
         if (!($company instanceof Company)) {
           continue;
         } // if
-        
+
         // Check if $logged_user can assign task to members of this company
         if ($company_id <> $logged_user->getCompanyId()) {
           if ($company->isOwner()) {
@@ -300,25 +300,25 @@
             } // if
           } // if
         } // if
-        
+
         $options[] = option_tag('--', '0:0'); // separator
-        
+
         $option_attributes = $company->getId() . ':0' == $selected ? array('selected' => 'selected') : null;
         $options[] = option_tag($company->getName(), $company_id . ':0', $option_attributes);
-        
+
         if (is_array($users)) {
           foreach ($users as $user) {
             $option_attributes = $company_id . ':' . $user->getId() == $selected ? array('selected' => 'selected') : null;
             $options[] = option_tag($company->getName() . ': ' . $user->getDisplayName(), $company_id . ':' . $user->getId(), $option_attributes);
           } // foreach
         } // if
-        
+
       } // foreach
     } // if
-    
+
     return select_box($list_name, $options, $attributes);
   } // assign_to_select_box
-  
+
   /**
   * Renders select milestone box
   *
@@ -336,7 +336,7 @@
     if (!($project instanceof Project)) {
       throw new InvalidInstanceError('$project', $project, 'Project');
     }
-    
+
     if (is_array($attributes)) {
       if (!isset($attributes['class'])) {
         $attributes['class'] = 'select_milestone';
@@ -344,7 +344,7 @@
     } else {
       $attributes = array('class' => 'select_milestone');
     } // if
-    
+
     $options = array(option_tag(lang('none'), 0));
     $milestones = $project->getOpenMilestones();
     if (is_array($milestones)) {
@@ -354,10 +354,10 @@
         $options[] = option_tag($milestone->getName()." (".format_date($milestone->getDueDate()).")", $milestone->getId(), $option_attributes);
       } // foreach
     } // if
-    
+
     return select_box($name, $options, $attributes);
   } // select_milestone
-  
+
   /**
   * Render select task list box
   *
@@ -375,7 +375,7 @@
     if (!($project instanceof Project)) {
       throw new InvalidInstanceError('$project', $project, 'Project');
     }
-    
+
     if (is_array($attributes)) {
       if (!isset($attributes['class'])) {
         $attributes['class'] = 'select_task_list';
@@ -383,7 +383,7 @@
     } else {
       $attributes = array('class' => 'select_task_list');
     } // if
-    
+
     $options = array(option_tag(lang('none'), 0));
     $task_lists = $open_only ? $project->getOpenTaskLists() : $project->getTaskLists();
     if (is_array($task_lists)) {
@@ -392,10 +392,10 @@
         $options[] = option_tag($task_list->getName(), $task_list->getId(), $option_attributes);
       } // foreach
     } // if
-    
+
     return select_box($name, $options, $attributes);
   } // select_task_list
-  
+
   /**
   * Return select message control
   *
@@ -412,7 +412,7 @@
     if (!($project instanceof Project)) {
       throw new InvalidInstanceError('$project', $project, 'Project');
     }
-    
+
     if (is_array($attributes)) {
       if (!isset($attributes['class'])) {
         $attributes['class'] = 'select_message';
@@ -420,7 +420,7 @@
     } else {
       $attributes = array('class' => 'select_message');
     } // if
-    
+
     $options = array(option_tag(lang('none'), 0));
     $messages = $project->getMessages();
     if (is_array($messages)) {
@@ -429,7 +429,7 @@
         $options[] = option_tag($message->getTitle(), $message->getId(), $option_attributes);
       } // foreach
     } // if
-    
+
     return select_box($name, $options, $attributes);
   } // select_message
 
@@ -449,7 +449,7 @@
     if (!($project instanceof Project)) {
       throw new InvalidInstanceError('$project', $project, 'Project');
     }
-    
+
     if (is_array($attributes)) {
       if (!isset($attributes['class'])) {
         $attributes['class'] = 'select_ticket';
@@ -457,7 +457,7 @@
     } else {
       $attributes = array('class' => 'select_ticket');
     } // if
-    
+
     $options = array(option_tag(lang('none'), 0));
     $tickets = $project->getTickets();
     if (is_array($tickets)) {
@@ -466,10 +466,10 @@
         $options[] = option_tag($ticket->getTitle(), $ticket->getId(), $option_attributes);
       } // foreach
     } // if
-    
+
     return select_box($name, $options, $attributes);
   } // select_ticket
-  
+
   /**
   * Return project object tags widget
   *
@@ -482,7 +482,7 @@
   function project_object_tags_widget($name, Project $project, $value, $attributes) {
     return text_field($name, $value, $attributes) . '<br /><span class="desc">' . lang('tags widget description') . '</span>';
   } // project_object_tag_widget
-  
+
   /**
   * Render comma separated tags of specific object that link on project tag page
   *
@@ -498,11 +498,11 @@
 
     $links = array();
     foreach ($tag_names as $tag_name) {
-      $links[] = '<a href="' . $project->getTagUrl($tag_name) . '">' . clean($tag_name) . '</a>';
+      $links[] = '<a href="' . $project->getTagUrl($tag_name) . '"><span class="label label-default">' . clean($tag_name) . '</span></a>';
     } // foreach
     return implode(', ', $links);
   } // project_object_tags
-  
+
   /**
   * Show object comments block
   *
@@ -516,7 +516,7 @@
     tpl_assign('__comments_object', $object);
     return tpl_fetch(get_template_path('object_comments', 'comment'));
   } // render_object_comments
-  
+
   /**
   * Render post comment form for specific project object
   *
@@ -526,12 +526,12 @@
   */
   function render_comment_form(ProjectDataObject $object) {
     $comment = new Comment();
-    
+
     tpl_assign('comment_form_comment', $comment);
     tpl_assign('comment_form_object', $object);
     return tpl_fetch(get_template_path('post_comment_form', 'comment'));
   } // render_post_comment_form
-  
+
   /**
   * Show object comments block in short form
   * Status updates are just comments displayed in a short form
@@ -546,7 +546,7 @@
     tpl_assign('__comments_object', $object);
     return tpl_fetch(get_template_path('object_statuses', 'comment'));
   } // render_object_status_updates
-  
+
   /**
   * Render post comment form for specific project object in short form
   * Status updates are just comments displayed in a short form
@@ -556,14 +556,14 @@
   */
   function render_status_update_form(ProjectDataObject $object) {
     $comment = new Comment();
-    
+
     tpl_assign('comment_form_comment', $comment);
     tpl_assign('comment_form_object', $object);
     return tpl_fetch(get_template_path('post_status_update_form', 'comment'));
   } // render_status_update_form
-    
+
   /**
-  * This function will render the code for file attachment section of the form. Note that 
+  * This function will render the code for file attachment section of the form. Note that
   * this need to be part of the existing form
   *
   * @param string $prefix File input name prefix
@@ -576,22 +576,22 @@
     }
     static $ids = array();
     static $js_included = false;
-    
+
     $attach_files_id = 0;
     do {
       $attach_files_id++;
     } while (in_array($attach_files_id, $ids));
-    
+
     $old_js_included = $js_included;
     $js_included = true;
-    
+
     tpl_assign('attach_files_js_included', $old_js_included);
     tpl_assign('attach_files_id', $attach_files_id);
     tpl_assign('attach_files_prefix', $prefix);
     tpl_assign('attach_files_max_controls', (integer) $max_controls);
     return tpl_fetch(get_template_path('attach_files', 'files'));
   } // render_attach_files
-  
+
   /**
   * List all fields attached to specific object
   *
@@ -665,15 +665,15 @@
     }
     return '';
   } // render_options
-  
+
   /**
   * Render application logs
-  * 
-  * This helper will render array of log entries. Options array of is array of template options and it can have this 
+  *
+  * This helper will render array of log entries. Options array of is array of template options and it can have this
   * fields:
-  * 
-  * - show_project_column - When we are on project dashboard we don't actually need to display project column because 
-  *   all entries are related with current project. That is not the situation on dashboard so we want to have the 
+  *
+  * - show_project_column - When we are on project dashboard we don't actually need to display project column because
+  *   all entries are related with current project. That is not the situation on dashboard so we want to have the
   *   control over this. This option is true by default
   *
   * @param array $log_entries
@@ -690,7 +690,7 @@
 
   /**
   * Render one project's application logs
-  * 
+  *
   * This helper will render array of log entries.
   *
   * @param array $project The project.
@@ -713,15 +713,15 @@
   * @return string
   */
   function render_action_taken_on_by(ApplicationLog $application_log_entry) {
-    if ($application_log_entry->isToday()) { 
+    if ($application_log_entry->isToday()) {
       $result = lang('today') . ' ' . clean(format_time($application_log_entry->getCreatedOn()));
-    } elseif ($application_log_entry->isYesterday()) { 
+    } elseif ($application_log_entry->isYesterday()) {
       $result =  lang('yesterday') . ' ' . clean(format_time($application_log_entry->getCreatedOn()));
-    } else { 
+    } else {
       $result =  clean(format_date($application_log_entry->getCreatedOn()));
     } // if
     $result = "<span class=\"logTakenOn\">$result</span></td><td><span class=\"logBy\">";
-    
+
     $taken_by = $application_log_entry->getTakenBy();
     return $taken_by instanceof User ? $result . '<a href="' . $taken_by->getCardUrl() . '">' . clean($taken_by->getDisplayName()) . '</a></span>' : $result . '</span>';
   } // render_action_taken_on

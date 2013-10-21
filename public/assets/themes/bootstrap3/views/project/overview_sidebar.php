@@ -53,7 +53,7 @@
   <div class="blockContent">
     <ul>
 
-<?php if (active_project()->canEdit(logged_user()) && (config_option('enable_efqm')=='yes')) { 
+<?php if (active_project()->canEdit(logged_user()) && (config_option('enable_efqm')=='yes')) {
       $score_card_url = get_url('project', 'score_card', array(
         'id' => active_project()->getId(),
         'active_project' => active_project()->getId(),
@@ -67,7 +67,7 @@
 <?php } // if ?>
 <?php if (active_project()->canChangePermissions(logged_user())) { ?>
       <li><a href="<?php echo active_project()->getPermissionsUrl(); ?>"><?php echo lang('edit permissions') ?></a></li>
-<?php } // if ?>    
+<?php } // if ?>
 <?php if (active_project()->canChangeStatus(logged_user())) { ?>
 <?php if (active_project()->isActive()) { ?>
       <li><a href="<?php echo active_project()->getCompleteUrl() ?>" onclick="return confirm('<?php echo lang('confirm complete project') ?>')"><?php echo lang('mark project as finished') ?></a></li>
@@ -77,7 +77,7 @@
 <?php } // if ?>
 <?php if (active_project()->canDelete(logged_user())) { ?>
       <li><a href="<?php echo active_project()->getDeleteUrl(); ?>"><?php echo lang('delete project') ?></a></li>
-<?php } // if ?>    
+<?php } // if ?>
 <?php if (logged_user()->isAdministrator() || active_project()->canChangePermissions(logged_user())) { ?>
       <li><a href="<?php echo get_url('project_settings', 'users'); ?>"><?php echo lang('users'); ?></a></li>
 <?php } // if ?>
@@ -115,12 +115,4 @@
 </div>
 <?php } // if ?>
 
-<div class="sidebarBlock">
-  <h2><?php echo lang('rss feeds') ?></h2>
-  <div class="blockContent">
-    <ul id="listOfRssFeeds">
-      <li><a href="<?php echo logged_user()->getRecentActivitiesFeedUrl(active_project()) ?>"><?php echo lang('recent activities feed') ?></a></li>
-    </ul>
-  </div>
-</div>
 <?php trace(__FILE__,'end') ?>

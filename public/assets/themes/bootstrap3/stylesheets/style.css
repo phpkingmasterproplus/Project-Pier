@@ -1403,8 +1403,11 @@ nav.navbar .nav>li>a:hover,nav.navbar .nav>li.active>a{padding:5px 15px;backgrou
 .project-card{background-color:#fff;padding:8px;margin-bottom:8px;box-shadow:1px 1px 1px #ddd}.project-card h2{margin:10px}
 .project-card p{text-indent:12px}
 .project-card small{font-size:14px}
-.tasks tr.completed{-webkit-filter:grayscale(100%);-moz-filter:grayscale(100%)}
-.progress{position:relative;height:4px;margin-bottom:10px;overflow:visible}.progress .progress-text{position:absolute;bottom:4px;right:0;padding-right:8px;font-size:12px}
+.tasks{padding:12px;margin-bottom:8px}.tasks h2{margin-top:4px;margin-bottom:4px;font-size:18px}
+.tasks table{background-color:#fff}
+.tasks .task-list-header{background-color:#e7e7e7}
+.tasks .completed{text-decoration:line-through}.tasks .completed:not(:hover){-webkit-filter:grayscale(100%);-moz-filter:grayscale(100%);opacity:0.4}
+.progress{position:relative;height:4px;margin-bottom:10px;overflow:visible}.progress .progress-text{position:absolute;bottom:4px;right:0;background-color:#fff;padding:0 8px;font-size:12px}
 #objectComments ul{list-style:none;padding-left:0}#objectComments ul li{background-color:#fff;padding:2px 8px;margin-bottom:4px;box-shadow:1px 1px 1px #ddd}
 .contact-pagination>li>a{padding:4px 8px}
 .tickets-filter{background-color:#fff;padding:8px;box-shadow:1px 1px 1px #ddd;margin-bottom:8px}.tickets-filter h4{margin:0}

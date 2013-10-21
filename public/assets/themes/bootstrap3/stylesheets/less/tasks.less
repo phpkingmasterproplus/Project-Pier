@@ -1,6 +1,23 @@
 .tasks {
-  tr.completed {
-    -webkit-filter: grayscale(100%);
-       -moz-filter: grayscale(100%);
+  padding: 12px;
+  margin-bottom: 8px;
+  h2 {
+    margin-top: 4px;
+    margin-bottom: 4px;
+    font-size: 18px;
+  }
+  table {
+    background-color: #fff;
+  }
+  .task-list-header { // should be tr.task-list-header
+    background-color: #e7e7e7;
+  }
+  .completed { // should be tr.completed
+    text-decoration: line-through;
+    &:not(:hover) {
+      -webkit-filter: grayscale(100%);
+         -moz-filter: grayscale(100%);
+      opacity: 0.4;
+    }
   }
 }

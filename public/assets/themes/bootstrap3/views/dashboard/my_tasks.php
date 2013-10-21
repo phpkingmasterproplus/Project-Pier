@@ -17,6 +17,16 @@
   $has_assigned_tasks = false;
 ?>
 
+<?php if (is_array(page_actions())) { ?>
+<div class="btn-toolbar">
+  <div class="btn-group">
+    <?php foreach (page_actions() as $page_action) { ?>
+      <a class="btn btn-default btn-sm" href="<?php echo $page_action->getURL() ?>"><?php echo clean($page_action->getTitle()) ?></a>
+    <?php } // foreach ?>
+  </div>
+</div>
+<?php } ?>
+
 <?php if (isset($active_projects) && is_array($active_projects) && count($active_projects)) { ?>
 <div id="my-tasks">
 <?php foreach ($active_projects as $active_project) { ?>
@@ -89,7 +99,11 @@
       <?php foreach ($assigned_tasks as $assigned_task) { ?>
         <tr>
           <td><?php echo $assigned_task->getId(); ?></td>
-          <td><?php echo $assigned_task->getText(); ?></td>
+          <td>
+            <?php if ($assigned_task->canView(logged_user())) { ?>
+              <a href="<?php echo $assigned_task->getViewUrl() ?>"><?php echo $assigned_task->getText(); ?></a>
+            <?php } else { echo $assigned_task->getText(); } // if ?>
+          </td>
           <td>
             <?php
               $assigned_to = $assigned_task->getAssignedTo();
@@ -112,11 +126,6 @@
           </td>
           <td>
             <?php if ($assigned_task->getTaskList() instanceof ProjectTaskList) { ?>
-              <?php if ($assigned_task->canView(logged_user())) { ?>
-                <a href="<?php echo $assigned_task->getViewUrl() ?>" title="<?php echo lang('view task') ?>">
-                  <i class="icon icon-fixed-width icon-file-text-alt"></i>
-                </a>
-              <?php } // if ?>
               <?php if ($assigned_task->canEdit(logged_user())) { ?>
                 <a href="<?php echo $assigned_task->getEditUrl() ?>" title="<?php echo lang('edit task') ?>">
                   <i class="icon icon-fixed-width icon-edit"></i>
@@ -154,16 +163,5 @@
 <?php if (!$has_assigned_tasks) { ?>
 <p><?php echo lang('no my tasks') ?></p>
 <?php } // if ?>
-
-
-<?php if (is_array(page_actions())) { ?>
-<div class="btn-toolbar">
-  <div class="btn-group">
-    <?php foreach (page_actions() as $page_action) { ?>
-      <a class="btn btn-default btn-sm" href="<?php echo $page_action->getURL() ?>"><?php echo clean($page_action->getTitle()) ?></a>
-    <?php } // foreach ?>
-  </div>
-</div>
-<?php } ?>
 
 <?php trace(__FILE__,'end'); ?>

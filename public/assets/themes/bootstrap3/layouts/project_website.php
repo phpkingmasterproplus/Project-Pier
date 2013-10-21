@@ -14,7 +14,6 @@
 
   <?php echo stylesheet_tag('style.css') ?>
   <?php echo link_tag(ROOT_URL.'favicon.ico', 'rel', 'Shortcut Icon', array("type"=>"image/x-icon")) ?>
-  <?php echo link_tag(logged_user()->getRecentActivitiesFeedUrl(), 'rel', 'alternate', array("type"=>"application/rss+xml", "title"=>lang('recent activities feed'))) ?>
 
   <?php add_javascript_to_page('pp.js') ?>
   <?php add_javascript_to_page('jquery.min.js') ?>

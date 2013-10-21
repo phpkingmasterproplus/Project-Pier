@@ -40,6 +40,9 @@ $completed = $task_list->getCompletedOn();
   </div>
   <div class="progress-text">
     <?php echo $percentTasks . '% ' . lang('completed') . ' (' . $completedTasks . ' of ' . $totalTasks . ')'; ?>
+    <?php if (!is_null($task_list->getDueDate())) { ?>
+      &nbsp;<i class="icon icon-exclamation"></i><i class="icon icon-exclamation"></i> <?php echo $task_list->getDueDate()->format('Y-m-d'); ?>
+    <?php } // if ?>
   </div>
 </div>
 <?php } // if ?>

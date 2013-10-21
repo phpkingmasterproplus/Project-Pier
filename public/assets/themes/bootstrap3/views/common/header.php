@@ -20,5 +20,6 @@
     </a>
   </span>&nbsp;&nbsp;&nbsp;&nbsp;
   <a href="<?php echo logged_user()->getAccountUrl() ?>" title="My Account"><i class="icon icon-user"></i></a>&nbsp;&nbsp;&nbsp;&nbsp;
+  <a href="<?php echo logged_user()->getRecentActivitiesFeedUrl() ?>" title="<?php echo lang('recent activities feed') ?>"><i class="icon icon-rss"></i></a>&nbsp;&nbsp;&nbsp;&nbsp;
   <a href="<?php echo get_url('access', 'logout') ?>" class="js-confirm" title="<?php echo lang('confirm logout') ?>" style="margin-right:8px;"><i class="icon icon-signout"></i></a>
 </header>
