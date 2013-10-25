@@ -134,7 +134,7 @@
     <td>
       <?php if ($task->getCompletedBy()) { ?>
         <a href="<?php echo $task->getCompletedBy()->getCardUrl(); ?>"><?php echo clean($task->getCompletedBy()->getDisplayName()); ?></a>
-      <? } // if ?>
+      <?php } // if ?>
     </td>
     <td><?php if (!is_null($task->getStartDate())) { echo $task->getStartDate()->format("Y-m-d"); } ?></td>
     <td><?php echo $task->getCompletedOn()->format("Y-m-d"); ?></td>
